@@ -24,4 +24,7 @@ class Profile extends Model
     public function address(): HasOne {
         return $this->hasOne(Address::class);
     }
+    public function student(): HasOne {
+        return $this->hasOne(Student::class);
+    }
 }

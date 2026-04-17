@@ -14,9 +14,11 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rules\Password;
 
 use App\Models\StudentProfiles;
 use App\Models\Roles;
+use App\Models\Program;
 
 
 
@@ -37,7 +39,7 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $password =Str::random(12);
+        // $password =Str::random(12);
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:100'],
             'middle_name' => ['nullable', 'string', 'max:100'],
@@ -47,6 +49,7 @@ class RegisteredUserController extends Controller
             'birthdate' => ['required', 'date'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'phone_number' => ['required', 'regex:/^(09|\+639)\d{9}$/'],
+            'password' => ['required', 'confirmed', Password::defaults()],
             //address
             'house_number' => ['required', 'string', 'max:20'],
             'street' => ['required', 'string', 'max:100'],
@@ -58,24 +61,25 @@ class RegisteredUserController extends Controller
             'high_school' => ['required', 'string', 'max:100'],
             'HS_grad_date'  => ['required', 'date'],
             'Strand'  => ['required', 'string', 'max:100'],
-            'college'  => ['required', 'string', 'max:100'],
-            'col_grad_date'  => ['required', 'date', ],
-            'prev_field'  => ['required', 'string', 'max:100'],
+            'college'  => ['nullable', 'string', 'max:100'],
+            'col_grad_date'  => ['nullable', 'date', ],
+            'prev_field'  => ['nullable', 'string', 'max:100'],
 
             //preferrences /selected
-
+            'program'  => ['required', 'string', 'max:10'],
+            'preferred_time'  => ['required', 'string', 'max:10'],
 
         ]);
+        $program = Program::where('code', $validated['program'])->orWhere('name', $validated['program'])->firstOrFail();
 
         $unenrolled = Roles::firstWhere('role', 'unenrolled');
         try {
-    $user = DB::transaction(function () use ($validated, $password, $unenrolled) {
+    $user = DB::transaction(function () use ($validated, $unenrolled, $program) {
 
         $user = User::create([
             'email' => $validated['email'],
-            'password' => Hash::make($password),
+            'password' => Hash::make($validated['password']),
             'role_id'=> $unenrolled->id,
-            
         ]);
 
         $profile = $user->profile()->create([
@@ -97,6 +101,27 @@ class RegisteredUserController extends Controller
             'province' => $validated['province'],
             'postal_code' => $validated['postal_code'],
         ]);
+
+         $student = $profile->student()->create([
+            'program' => $program->id,
+            'preferred_time' => $validated['preferred_time'],
+            'year_level' => '0',
+        ]);
+
+        $educbackground = $student->educationalbackground()->create([
+            'school' => $validated['high_school'],
+            'grad_date' => $validated['HS_grad_date'],
+            'strand_or_course' => $validated['Strand'],
+        ]);
+
+        if (isset($validated['college'], $validated['col_grad_date'], $validated['prev_field'])) {
+            $educbackground = $student->educationalbackground()->create([
+                'school' => $validated['college'],
+                'grad_date' => $validated['col_grad_date'],
+                'strand_or_course' => $validated['prev_field'],
+            ]);
+        };
+
 
 
         return $user;

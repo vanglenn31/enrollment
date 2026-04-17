@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('educationalbackground', function (Blueprint $table) {
+        Schema::create('educationalbackgrounds', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->constrained()->onDelete('cascade');
             $table->string('school');
-            $table->date('grade_date');
+            $table->date('grad_date');
             $table->string('strand_or_course');
             $table->timestamps();
         });

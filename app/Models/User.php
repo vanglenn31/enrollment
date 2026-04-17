@@ -12,6 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+
 #[Fillable([ 'email', 'password', 'role_id'])]
 #[Hidden(['password', 'remember_token'])]
 
