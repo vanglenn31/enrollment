@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
-class StudentController extends Controller
+class AdminController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -62,28 +62,13 @@ class StudentController extends Controller
     {
         //
     }
-
     public function dashboard()
     {
-        $user = Auth::user();
+        $studentCount = User::whereHas('role', function ($query) {
+        $query->where('role', 'student');
+        })->count();
 
-        $enrollments = $user->studentprofile?->student?->studentEnrollments()
-            ->with('course')
-            ->get() ?? collect();
+        return view('admin.dashboard', compact('studentCount'));
 
-        return view('student.dashboard', compact('enrollments'));
-
-    }
-    public function course()
-    {
-        return view('student.course');
-    }
-    public function enrollment()
-    {
-        return view('student.enrollment');
-    }
-    public function payment()
-    {
-        return view('student.payments'); 
     }
 }

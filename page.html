@@ -1,0 +1,464 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="PL5K1BCqUKtbHaDEZ3CjpCItRGeyIdi5THLeRsrH">
+
+    <title>UIM</title>
+
+    <script type="module" src="http://[::1]:5173/@vite/client"></script><link rel="stylesheet" href="http://[::1]:5173/resources/css/app.css" /><script type="module" src="http://[::1]:5173/resources/js/app.js"></script></head>
+
+<body class="font-sans text-gray-900 antialiased bg-zinc-100 font-[inter]">
+    <header>
+            </header>
+    <main>
+         <nav class="sticky top-0 lg:h-24 xl:h-30 2xl:h-36 bg-first flex justify-between lg:justify-around items-center font-semibold shadow-xl px-10 lg:px-5 z-50 ">
+    <div class="flex justify-center items-center ">
+        <div >
+            <img src="http://[::1]:5173/resources/images/logo.png" alt="UIM logo" class="w-[4rem] h-full]">
+        </div>
+        <div class="hidden md:block">
+            <h3 class="sm:text-md lg:text-xl md:text:xlg">UIM OES</h3>
+            <p class="sm:text-[1rem] lg:text-md">University of International Mindandao</p>
+        </div>
+
+    </div>
+    <button id="menu-btn" class="lg:hidden text-black flex justify-center items-center " >
+            <img src="http://[::1]:5173/resources/images/hamburger.svg" alt="humburger icon" class="w-[2rem] h-full hover:opacity-60 outline-2">
+        </button>
+    <div class="hidden lg:block flex flex-row items-center md:text-lg lg:text-xl xl:text-xl 2xl:4xl "> 
+        <ul class="w-full grid grid-cols-4 justify-items-center gap-2">
+            <li class="grid place-items-center"><a href="http://127.0.0.1:8000" class=" hover:bg-gray-300  w-full py-2 px-4 rounded-xl active:bg-sky-400 transition-colors duration-200 ease-in">Home</a></li>
+            <li class="grid place-items-center"><a href="http://127.0.0.1:8000/programs" class="text-black hover:bg-gray-300 w-full py-2 px-4 rounded-xl active:bg-sky-100 transition-colors duration-200 ease-in">Programs</a></li>
+            <li class="grid place-items-center"><a href="http://127.0.0.1:8000/admission" class="text-black  hover:bg-gray-300 w-full py-2 px-4 rounded-xl active:bg-sky-100 transition-colors duration-200 ease-in">Admissions</a></li>
+            <li class="grid place-items-center"><a href="http://127.0.0.1:8000/FAQ" class="text-black hover:hover:bg-gray-300 w-full py-2 px-4 rounded-xl active:bg-sky-100 duration-200 ease-in">FAQ</a></li>
+        </ul>
+    </div>
+    <div class="hidden lg:block flex flex-row items-end md:text-lg lg:text:xl text-nowrap">
+        <ul class="w-full flex flex-row gap-10">
+            <li><a href="http://127.0.0.1:8000/login" class="hover:bg-sky-400 hover:text-first w-full  py-2 px-4 rounded-xl">Login</a></li>
+            <li><a href="http://127.0.0.1:8000/register" class="bg-sky-800 hover:bg-sky-1000 text-first w-full  py-2 px-4 rounded-xl">Enroll Now</a></li>
+        </ul>
+    </div>    
+</nav>
+<div id="overlay" class="hidden fixed inset-0 bg-black-100 z-40"></div>
+
+<div id="sidebar"
+     class="fixed top-0 right-0 h-full w-64 bg-first text-white shadow-xl z-[999]
+            translate-x-full transition-transform duration-400 ease-in">
+
+    <!-- Close button -->
+    <div class="flex justify-end p-4">
+        <button id="close-btn" class="text-3xl text-black mr-auto">x</button>
+    </div>
+
+    <!-- Navigation -->
+    <div class="flex flex-col gap-4 mt-4 text-black text-center">
+
+        <a href="http://127.0.0.1:8000" class="py-2 hover:bg-blue-100 rounded">
+            Home
+        </a>
+
+        <a href="http://127.0.0.1:8000/programs" class="py-2 hover:bg-blue-100 rounded">
+            Programs
+        </a>
+
+        <a href="http://127.0.0.1:8000/admission" class="py-2 hover:bg-blue-100 rounded">
+            Admissions
+        </a>
+
+        <a href="http://127.0.0.1:8000/FAQ" class="py-2 hover:bg-blue-100 rounded">
+            FAQ
+        </a>
+
+        <hr class="opacity-30">
+
+        <a href="http://127.0.0.1:8000/login" class="py-2 hover:bg-blue-100 rounded">
+            Login
+        </a>
+
+        <a href="http://127.0.0.1:8000/register" class="py-2 hover:bg-blue-100 rounded">
+            Enroll Now
+        </a>
+
+    </div>
+</div>
+
+ 
+
+<script>
+    const btn = document.getElementById('menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const closeBtn = document.getElementById('close-btn');
+
+    function openMenu() {
+        sidebar.classList.remove('translate-x-full');
+        overlay.classList.remove('hidden');
+    }
+
+    function closeMenu() {
+        sidebar.classList.add('translate-x-full');
+        overlay.classList.add('hidden');
+    }
+
+        btn.addEventListener('click', openMenu);
+        closeBtn.addEventListener('click', closeMenu);
+        overlay.addEventListener('click', closeMenu);
+</script>    <div class="max-w-5xl mx-auto py-6">
+        <h1 class="text-2xl font-bold mb-2">Enrollment Application</h1>
+
+        <!-- Progress -->
+        <div class="w-full bg-gray-200 h-2 rounded mb-6">
+            <div id="progressBar" class="bg-indigo-600 h-2 rounded" style="width:20%"></div>
+        </div>
+
+        <!-- Step Circles -->
+        <div class="flex justify-between mb-8 text-center text-sm">
+            <div class="step-circle active">1<br>Personal</div>
+            <div class="step-circle">2<br>Academic</div>
+            <div class="step-circle">3<br>Program</div>
+            <div class="step-circle">4<br>Address</div>
+            <div class="step-circle">5<br>Account</div>
+        </div>
+        <form method="POST" action="http://127.0.0.1:8000/register" class="pt-6">
+            <input type="hidden" name="_token" value="PL5K1BCqUKtbHaDEZ3CjpCItRGeyIdi5THLeRsrH" autocomplete="off">            <div class="step">
+            <!-- Personal Information -->
+                <div>
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="first_name">
+    First Name
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="first_name" required="required" autofocus="autofocus" autocomplete="first_name">
+                                    </div>
+                <div>
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="middle_name">
+    Middle Name
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="middle_name" autofocus="autofocus" autocomplete="middle_name">
+                                    </div>
+                <div>
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="last_name">
+    Last Name
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="last_name" autofocus="autofocus" autocomplete="last_name">
+                                    </div>
+                <div>
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="suffix">
+    Suffix
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="suffix" autofocus="autofocus" autocomplete="suffix">
+                                    </div>
+                <div>
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="sex">
+    Sex
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="sex" required="required" autofocus="autofocus" autocomplete="sex">
+                                    </div>
+                <div>
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="birthdate">
+    Date of Birth
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="date" name="birthdate" required="required" autofocus="autofocus" autocomplete="birthdate">
+                                    </div>
+
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="email">
+    Email
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="email" name="email" required="required" autocomplete="email">
+                                    </div>
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="phone_number">
+    Phone Number
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="number" name="phone_number" required="required" autocomplete="phone_number">
+                                    </div>
+
+                <button type="button" onclick="nextStep()" class="btn-next">Next</button>
+            </div>
+
+            <!-- Address -->
+            <div class="step hidden">
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="house_number">
+    House Number
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="house_number" autocomplete="house_number">
+                                    </div>
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="street">
+    Street
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="street" autocomplete="street">
+                                    </div>
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="barangay">
+    Barangay
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="barangay" required="required" autocomplete="barangay">
+                                    </div>
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="city">
+    City/Municipality
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="city" required="required" autocomplete="city">
+                                    </div>
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="province">
+    Province
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="province" required="required" autocomplete="province">
+                                    </div>
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="postal_code">
+    Postal Code
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="number" name="postal_code" required="required" autocomplete="postal_code">
+                                    </div>
+                <div class="flex justify-between mt-4">
+                    <button type="button" onclick="prevStep()" class="btn-back">Back</button>
+                    <button type="button" onclick="nextStep()" class="btn-next">Next</button>
+                </div>
+            </div>
+
+            <!-- Education Background -->
+            <div class="step hidden">
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="high_school">
+    High School
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="high_school" required="required" autocomplete="high_school">
+                                    </div>
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="HS_grad_date">
+    Year of Graduation
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="date" name="HS_grad_date" required="required" autocomplete="HS_grad_date">
+                                    </div>
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="Strand">
+    Strand
+</label>
+                    <select id="" name="Strand" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full">
+                
+                        <option value="">Select course</option>
+                        <option value="TVL">TVL</option>
+                        <option value="HUMSS">HUMSS</option>
+                        <option value="STEM">STEM</option>
+                        <option value="ABM">ABM</option>
+                        <option value="GAS">GAS</option>
+                        <option value="Arts & Design">Arts & Design</option>
+                        <option value="Sports">Sports</option>
+
+                    </select>
+                                    </div>
+            
+                <!-- optional -->
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="college">
+    College
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="college" autocomplete="college">
+                                    </div>
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="col_grad_date">
+    College Graduation Date  
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="date" name="col_grad_date" autocomplete="col_grad_date">
+                                    </div>
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="prev_field">
+    Previos field of Study
+</label>
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="" type="text" name="prev_field" autocomplete="prev_field">
+                    
+                </div>
+                <div class="flex justify-between mt-4">
+                    <button type="button" onclick="prevStep()" class="btn-back">Back</button>
+                    <button type="button" onclick="nextStep()" class="btn-next">Next</button>
+                </div>
+            </div>
+
+            <!-- //selected program and preferrences -->
+            <div class="step hidden">
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="program">
+    Program
+</label>
+                    <select id="" name="program" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full">
+                
+                        <option value="">Select course</option>
+                        <option value="BSIT">Bachelor of Science in Information Technology</option>
+                        <option value="BSCS">Bachelor of Science in Computer Science</option>
+                        <option value="BSIS">Bachelor of Science in Information Systems</option>
+                    </select>
+                                    </div>
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="preferred_time">
+    Preferred Time
+</label>
+                    <select id="" name="preferred_time" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full">
+                
+                        <option value="">Select Time</option>
+                        <option value="morning">Morning</option>
+                        <option value="afternoon">Afternoon</option>
+                        <option value="evening">Evening</option>
+                    </select>
+                                    </div>
+                <div class="flex justify-between mt-4">
+                    <button type="button" onclick="prevStep()" class="btn-back">Back</button>
+                    <button type="button" onclick="nextStep()" class="btn-next">Next</button>
+                </div>
+            </div>
+            
+            <!-- //password -->
+                <div class="step hidden">
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="password">
+    Password
+</label>
+
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="password" type="password" name="password" required="required" autocomplete="new-password">
+
+                                    </div>
+
+                <!-- Confirm Password -->
+                <div class="mt-4">
+                    <label class="block font-medium text-sm text-black-700 dark:text-black-300" for="password_confirmation">
+    Confirm Password
+</label>
+
+                    <input  class="border-gray-300 bg-white text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="password_confirmation" type="password" name="password_confirmation" required="required" autocomplete="new-password">
+
+                                    </div>
+                <div class="flex justify-between mt-4">
+                    <button type="button" onclick="prevStep()" class="btn-back">Back</button>
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-800 uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-white focus:bg-gray-700 dark:focus:bg-white active:bg-gray-900 dark:active:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150 ms-4">
+    Register
+</button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end mt-4">
+                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="http://127.0.0.1:8000/login">
+                    Already registered?
+                </a>
+
+                
+            </div>
+        </form>
+    </div>
+    <style>
+        .input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .btn-next {
+            background: #4f46e5;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+            margin-top: 12px;
+        }
+
+        .btn-back {
+            background: gray;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+        }
+
+        .step-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid gray;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .step-indicator.active {
+            background: #4f46e5;
+            color: white;
+            border: none;
+        }
+
+        .step-indicator.done {
+            background: #10b981;
+            color: white;
+            border: none;
+        }
+    </style>
+    <script>
+        let currentStep = 0;
+        const steps = document.querySelectorAll('.step');
+        const indicators = document.querySelectorAll('.step-indicator');
+        const progressBar = document.getElementById('progressBar');
+
+        function showStep(index) {
+            steps.forEach((step, i) => {
+                step.classList.toggle('hidden', i !== index);
+            });
+
+            indicators.forEach((ind, i) => {
+                ind.classList.remove('active', 'done');
+
+                if (i < index) {
+                    ind.classList.add('done');
+                    ind.innerHTML = "Γ£ö";
+                } else if (i === index) {
+                    ind.classList.add('active');
+                    ind.innerHTML = i + 1;
+                } else {
+                    ind.innerHTML = i + 1;
+                }
+            });
+
+            progressBar.style.width = ((index + 1) / steps.length) * 100 + "%";
+        }
+
+        function validateStep() {
+            let inputs = steps[currentStep].querySelectorAll("input, select, textarea");
+
+            for (let input of inputs) {
+                if (input.hasAttribute("required") && !input.value) {
+                    input.classList.add("border-red-500");
+                    alert("Please fill all required fields.");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function nextStep() {
+            if (!validateStep()) return;
+
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        showStep(currentStep);
+    </script>
+    </main>
+           
+
+    <footer>
+            </footer>
+
+</body>
+</html>

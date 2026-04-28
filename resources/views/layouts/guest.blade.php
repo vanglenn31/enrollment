@@ -10,7 +10,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans text-gray-900 antialiased bg-gray-100 font-[inter]">
+<body class="font-sans text-gray-900 antialiased bg-zinc-200 font-[inter]">
     <header>
         @yield('header')
     </header>

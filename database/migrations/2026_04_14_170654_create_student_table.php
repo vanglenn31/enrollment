@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('student_number')->nullable();
             $table->foreignId('program')->constrained()->onDelete('cascade');
             $table->string('preferred_time')->nullable();
+            $table->enum('status', ['unverified','verified','unenrolled', 'enrolled', 'withdraw', 'suspend', 'expelled'])->default('unverified');
             $table->string('year_level');
             $table->timestamps();
         });

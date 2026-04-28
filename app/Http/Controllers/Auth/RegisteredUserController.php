@@ -39,6 +39,8 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        
+        
         // $password =Str::random(12);
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:100'],
@@ -72,16 +74,16 @@ class RegisteredUserController extends Controller
         ]);
         $program = Program::where('code', $validated['program'])->orWhere('name', $validated['program'])->firstOrFail();
 
-        $unenrolled = Roles::firstWhere('role', 'unenrolled');
+        $newStudent = Roles::firstWhere('role', 'student');
         try {
-    $user = DB::transaction(function () use ($validated, $unenrolled, $program) {
+    $user = DB::transaction(function () use ($validated, $newStudent, $program) {
 
         $user = User::create([
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role_id'=> $unenrolled->id,
+            'role_id'=> $newStudent->id,
         ]);
-
+        
         $profile = $user->profile()->create([
             'first_name' => $validated['first_name'],
             'middle_name' => $validated['middle_name'],
@@ -92,6 +94,7 @@ class RegisteredUserController extends Controller
             'email' => $validated['email'],
             'phone_number' => $validated['phone_number'],
         ]);
+       
 
          $address = $profile->address()->create([
             'house_number' => $validated['house_number'],
@@ -101,18 +104,21 @@ class RegisteredUserController extends Controller
             'province' => $validated['province'],
             'postal_code' => $validated['postal_code'],
         ]);
+       
 
          $student = $profile->student()->create([
             'program' => $program->id,
             'preferred_time' => $validated['preferred_time'],
             'year_level' => '0',
         ]);
+        
 
         $educbackground = $student->educationalbackground()->create([
             'school' => $validated['high_school'],
             'grad_date' => $validated['HS_grad_date'],
             'strand_or_course' => $validated['Strand'],
         ]);
+        
 
         if (isset($validated['college'], $validated['col_grad_date'], $validated['prev_field'])) {
             $educbackground = $student->educationalbackground()->create([
@@ -121,10 +127,11 @@ class RegisteredUserController extends Controller
                 'strand_or_course' => $validated['prev_field'],
             ]);
         };
-
+            
 
 
         return $user;
+        dd('before education', $user);
     });
 
 } catch (\Throwable $e) {
@@ -136,6 +143,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('verification.notice');
     }
 }

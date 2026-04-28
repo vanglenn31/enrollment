@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class StudentProfiles extends Model
+class StudentProfile extends Model
 {
     protected $table ='profile';
     protected $fillable = [
@@ -21,4 +21,8 @@ class StudentProfiles extends Model
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
+     public function student(): HasOne {
+        return $this->hasOne(Student::class);
+    }
+   
 }

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('student_id')->constrained()->onDelete('cascade');
             $table->string('files_desc')->nullable();
              $table->string('file_path');
-             $table->string('status')->default('pending');
+             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
              $table->date('date_submitted')->nullable();
             $table->timestamps();
         });
