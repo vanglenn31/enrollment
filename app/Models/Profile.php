@@ -18,13 +18,23 @@ class Profile extends Model
         'phone_number'
     ];
 
+    protected $casts = [
+        'birthdate' => 'date',
+    ];
+
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
+
     public function address(): HasOne {
         return $this->hasOne(Address::class);
     }
+
     public function student(): HasOne {
-        return $this->hasOne(Student::class);
+        return $this->hasOne(Student::class, 'profile_id');
+    }
+
+    public function professor(): HasOne {
+        return $this->hasOne(Professor::class, 'profile_id');
     }
 }

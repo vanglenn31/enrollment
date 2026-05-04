@@ -1,334 +1,426 @@
 <x-guest-layout>
 
     @include('layouts.landing_nav')
-    <div class="max-w-5xl mx-auto py-6">
-        <h1 class="text-2xl font-bold mb-2">Enrollment Application</h1>
 
-        <!-- Progress -->
-        <div class="w-full bg-gray-200 h-2 rounded mb-6">
-            <div id="progressBar" class="bg-indigo-600 h-2 rounded" style="width:20%"></div>
-        </div>
+    {{-- Google Fonts --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-        <!-- Step Circles -->
-        <div class="flex justify-between mb-8 text-center text-sm">
-            <div class="step-circle active">1<br>Personal</div>
-            <div class="step-circle">2<br>Academic</div>
-            <div class="step-circle">3<br>Program</div>
-            <div class="step-circle">4<br>Address</div>
-            <div class="step-circle">5<br>Account</div>
-        </div>
-        <form method="POST" action="{{ route('register') }}" class="pt-6">
-            @csrf
-            <div class="step">
-            <!-- Personal Information -->
-                <div>
-                    <x-input-label for="first_name" :value="__('First Name')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="first_name" :value="old('first_name')" required autofocus autocomplete="first_name" />
-                    <x-input-error :messages="$errors->get('first_name')" class="mt-2" />
-                </div>
-                <div>
-                    <x-input-label for="middle_name" :value="__('Middle Name')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="middle_name" :value="old('middle_name')"  autofocus autocomplete="middle_name" />
-                    <x-input-error :messages="$errors->get('middle_name')" class="mt-2" />
-                </div>
-                <div>
-                    <x-input-label for="last_name" :value="__('Last Name')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="last_name" :value="old('last_name')"  autofocus autocomplete="last_name" />
-                    <x-input-error :messages="$errors->get('last_name')" class="mt-2" />
-                </div>
-                <div>
-                    <x-input-label for="suffix" :value="__('Suffix')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="suffix" :value="old('suffix')"  autofocus autocomplete="suffix" />
-                    <x-input-error :messages="$errors->get('suffix')" class="mt-2" />
-                </div>
-                <div>
-                    <x-input-label for="sex" :value="__('Sex')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="sex" :value="old('sex')"  required autofocus autocomplete="sex" />
-                    <x-input-error :messages="$errors->get('sex')" class="mt-2" />
-                </div>
-                <div>
-                    <x-input-label for="birthdate" :value="__('Date of Birth')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="date" name="birthdate" :value="old('birthdate')"  required autofocus autocomplete="birthdate" />
-                    <x-input-error :messages="$errors->get('birthdate')" class="mt-2" />
-                </div>
-
-                <div class="mt-4">
-                    <x-input-label for="email" :value="__('Email')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="email" />
-                    <x-input-error :messages="$errors->get('email')" class="mt-2" />
-                </div>
-                <div class="mt-4">
-                    <x-input-label for="phone_number" :value="__('Phone Number')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="number" name="phone_number" :value="old('phone_number')" required autocomplete="phone_number" />
-                    <x-input-error :messages="$errors->get('phone_number')" class="mt-2" />
-                </div>
-
-                <button type="button" onclick="nextStep()" class="btn-next">Next</button>
-            </div>
-
-            <!-- Address -->
-            <div class="step hidden">
-                <div class="mt-4">
-                    <x-input-label for="house_number" :value="__('House Number')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="house_number" :value="old('house_number')"  autocomplete="house_number" />
-                    <x-input-error :messages="$errors->get('house_number')" class="mt-2" />
-                </div>
-                <div class="mt-4">
-                    <x-input-label for="street" :value="__('Street')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="street" :value="old('street')"  autocomplete="street" />
-                    <x-input-error :messages="$errors->get('street')" class="mt-2" />
-                </div>
-                <div class="mt-4">
-                    <x-input-label for="barangay" :value="__('Barangay')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="barangay" :value="old('barangay')" required autocomplete="barangay" />
-                    <x-input-error :messages="$errors->get('barangay')" class="mt-2" />
-                </div>
-                <div class="mt-4">
-                    <x-input-label for="city" :value="__('City/Municipality')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="city" :value="old('city')" required autocomplete="city" />
-                    <x-input-error :messages="$errors->get('city')" class="mt-2" />
-                </div>
-                <div class="mt-4">
-                    <x-input-label for="province" :value="__('Province')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="province" :value="old('province')" required autocomplete="province" />
-                    <x-input-error :messages="$errors->get('province')" class="mt-2" />
-                </div>
-                <div class="mt-4">
-                    <x-input-label for="postal_code" :value="__('Postal Code')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="number" name="postal_code" :value="old('postal_code')" required autocomplete="postal_code" />
-                    <x-input-error :messages="$errors->get('postal_code')" class="mt-2" />
-                </div>
-                <div class="flex justify-between mt-4">
-                    <button type="button" onclick="prevStep()" class="btn-back">Back</button>
-                    <button type="button" onclick="nextStep()" class="btn-next">Next</button>
-                </div>
-            </div>
-
-            <!-- Education Background -->
-            <div class="step hidden">
-                <div class="mt-4">
-                    <x-input-label for="high_school" :value="__('High School')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="high_school" :value="old('high_school')" required autocomplete="high_school" />
-                    <x-input-error :messages="$errors->get('high_school')" class="mt-2" />
-                </div>
-                <div class="mt-4">
-                    <x-input-label for="HS_grad_date" :value="__('Year of Graduation')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="date" name="HS_grad_date" :value="old('HS_grad_date')" required autocomplete="HS_grad_date" />
-                    <x-input-error :messages="$errors->get('HS_grad_date')" class="mt-2" />
-                </div>
-                <div class="mt-4">
-                    <x-input-label for="Strand" :value="__('Strand')" />
-                    <select id="" name="Strand" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full">
-                
-                        <option value="">Select course</option>
-                        <option value="TVL">TVL</option>
-                        <option value="HUMSS">HUMSS</option>
-                        <option value="STEM">STEM</option>
-                        <option value="ABM">ABM</option>
-                        <option value="GAS">GAS</option>
-                        <option value="Arts & Design">Arts & Design</option>
-                        <option value="Sports">Sports</option>
-
-                    </select>
-                    <x-input-error :messages="$errors->get('Strand')" class="mt-2" />
-                </div>
-            
-                <!-- optional -->
-                <div class="mt-4">
-                    <x-input-label for="college" :value="__('College')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="college" :value="old('college')"  autocomplete="college" />
-                    <x-input-error :messages="$errors->get('college')" class="mt-2" />
-                </div>
-                <div class="mt-4">
-                    <x-input-label for="col_grad_date" :value="__('College Graduation Date  ')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="date" name="col_grad_date" :value="old('col_grad_date')"  autocomplete="col_grad_date" />
-                    <x-input-error :messages="$errors->get('col_grad_date')" class="mt-2" />
-                </div>
-                <div class="mt-4">
-                    <x-input-label for="prev_field" :value="__('Previos field of Study')" />
-                    <x-text-input id="" class="block mt-1 w-full" type="text" name="prev_field" :value="old('prev_field')"  autocomplete="prev_field" />
-                    <x-input-error :messages="$errors->get('prev_field')" class="mt-2" />
-
-                </div>
-                <div class="flex justify-between mt-4">
-                    <button type="button" onclick="prevStep()" class="btn-back">Back</button>
-                    <button type="button" onclick="nextStep()" class="btn-next">Next</button>
-                </div>
-            </div>
-
-            <!-- //selected program and preferrences -->
-            <div class="step hidden">
-                <div class="mt-4">
-                    <x-input-label for="program" :value="__('Program')" />
-                    <select id="" name="program" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full">
-                
-                        <option value="">Select course</option>
-                        <option value="BSIT">Bachelor of Science in Information Technology</option>
-                        <option value="BSCS">Bachelor of Science in Computer Science</option>
-                        <option value="BSIS">Bachelor of Science in Information Systems</option>
-                    </select>
-                    <x-input-error :messages="$errors->get('program')" class="mt-2" />
-                </div>
-                <div class="mt-4">
-                    <x-input-label for="preferred_time" :value="__('Preferred Time')" />
-                    <select id="" name="preferred_time" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full">
-                
-                        <option value="">Select Time</option>
-                        <option value="morning">Morning</option>
-                        <option value="afternoon">Afternoon</option>
-                        <option value="evening">Evening</option>
-                    </select>
-                    <x-input-error :messages="$errors->get('preferred_time')" class="mt-2" />
-                </div>
-                <div class="flex justify-between mt-4">
-                    <button type="button" onclick="prevStep()" class="btn-back">Back</button>
-                    <button type="button" onclick="nextStep()" class="btn-next">Next</button>
-                </div>
-            </div>
-            
-            <!-- //password -->
-                <div class="step hidden">
-                <div class="mt-4">
-                    <x-input-label for="password" :value="__('Password')" />
-
-                    <x-text-input id="password" class="block mt-1 w-full"
-                                    type="password"
-                                    name="password"
-                                    required autocomplete="new-password" />
-
-                    <x-input-error :messages="$errors->get('password')" class="mt-2" />
-                </div>
-
-                <!-- Confirm Password -->
-                <div class="mt-4">
-                    <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-                    <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                    type="password"
-                                    name="password_confirmation" required autocomplete="new-password" />
-
-                    <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-                </div>
-                <div class="flex justify-between mt-4">
-                    <button type="button" onclick="prevStep()" class="btn-back">Back</button>
-                    <x-primary-button class="ms-4">
-                    {{ __('Register') }}
-                </x-primary-button>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}">
-                    {{ __('Already registered?') }}
-                </a>
-
-                
-            </div>
-        </form>
-    </div>
     <style>
-        .input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+        body { font-family: 'DM Sans', sans-serif; }
+        h1, h2 { font-family: 'Lora', serif; }
+        .step { animation: stepFade .25s ease both; }
+        @keyframes stepFade {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-
-        .btn-next {
-            background: #4f46e5;
-            color: white;
-            padding: 10px 16px;
-            border-radius: 6px;
-            margin-top: 12px;
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.85rem center;
+            -webkit-appearance: none;
+            appearance: none;
         }
-
-        .btn-back {
-            background: gray;
-            color: white;
-            padding: 10px 16px;
-            border-radius: 6px;
-        }
-
-        .step-indicator {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid gray;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-
-        .step-indicator.active {
-            background: #4f46e5;
-            color: white;
-            border: none;
-        }
-
-        .step-indicator.done {
-            background: #10b981;
-            color: white;
-            border: none;
-        }
+        #progressBar { transition: width .4s cubic-bezier(.4,0,.2,1); }
+        #toast { transition: opacity .25s, transform .25s; }
+        #toast.hide { opacity: 0; transform: translateX(-50%) translateY(8px); pointer-events: none; }
     </style>
+
+    <div class="min-h-screen bg-slate-50 py-10 px-4">
+        <div class="max-w-2xl mx-auto">
+
+            {{-- Header --}}
+            <div class="mb-8">
+                <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
+                    Enrollment Application
+                </h1>
+                <p class="mt-1 text-sm text-slate-500">Fill out all steps to complete your application.</p>
+            </div>
+
+            {{-- Progress bar --}}
+            <div class="w-full h-1.5 bg-slate-200 rounded-full mb-8 overflow-hidden">
+                <div id="progressBar" class="h-full bg-indigo-600 rounded-full" style="width:20%"></div>
+            </div>
+
+            {{-- Step indicators --}}
+            <div class="relative flex justify-between items-start mb-10">
+                <div class="absolute top-4 left-[5%] right-[5%] h-px bg-slate-200 z-0"></div>
+                @foreach([['1','Personal'],['2','Academic'],['3','Program'],['4','Address'],['5','Account']] as [$num,$label])
+                <div class="step-item flex flex-col items-center gap-1.5 z-10 {{ $loop->first ? 'active':'' }}">
+                    <div class="step-bubble w-9 h-9 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center text-xs font-semibold text-slate-400 shadow-sm transition-all duration-300">
+                        {{ $num }}
+                    </div>
+                    <span class="step-label text-[10px] font-medium text-slate-400 tracking-wide hidden sm:block transition-colors duration-300">
+                        {{ $label }}
+                    </span>
+                </div>
+                @endforeach
+            </div>
+
+            {{-- Form card --}}
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-10">
+                <form method="POST" action="{{ route('register') }}">
+                    @csrf
+
+                    {{-- ───── STEP 1 · Personal ───── --}}
+                    <div class="step">
+                        <h2 class="text-xl font-semibold text-slate-800 pb-4 mb-6 border-b border-slate-100">Personal Information</h2>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">First Name <span class="text-red-400">*</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="text" name="first_name" :value="old('first_name')" required autofocus autocomplete="given-name" />
+                                <x-input-error :messages="$errors->get('first_name')" class="mt-1 text-xs" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Middle Name <span class="normal-case font-normal text-slate-400">(opt.)</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="text" name="middle_name" :value="old('middle_name')" autocomplete="additional-name" />
+                                <x-input-error :messages="$errors->get('middle_name')" class="mt-1 text-xs" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Suffix <span class="normal-case font-normal text-slate-400">(opt.)</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="text" name="suffix" :value="old('suffix')" placeholder="Jr., Sr…" autocomplete="off" />
+                                <x-input-error :messages="$errors->get('suffix')" class="mt-1 text-xs" />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Last Name <span class="text-red-400">*</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="text" name="last_name" :value="old('last_name')" required autocomplete="family-name" />
+                                <x-input-error :messages="$errors->get('last_name')" class="mt-1 text-xs" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Sex <span class="text-red-400">*</span></label>
+                                <select name="sex" required
+                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-8 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                                    <option value="" disabled {{ old('sex')?'':'selected' }}>Select…</option>
+                                    <option value="Male"   {{ old('sex')=='Male'   ?'selected':'' }}>Male</option>
+                                    <option value="Female" {{ old('sex')=='Female' ?'selected':'' }}>Female</option>
+                                </select>
+                                <x-input-error :messages="$errors->get('sex')" class="mt-1 text-xs" />
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Date of Birth <span class="text-red-400">*</span></label>
+                            <x-text-input class="block w-full sm:w-52 rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                type="date" name="birthdate" :value="old('birthdate')" required autocomplete="bday" />
+                            <x-input-error :messages="$errors->get('birthdate')" class="mt-1 text-xs" />
+                        </div>
+
+                        <div class="flex items-center gap-3 my-6">
+                            <span class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Contact</span>
+                            <div class="flex-1 h-px bg-slate-100"></div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Email <span class="text-red-400">*</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="email" name="email" :value="old('email')" required autocomplete="email" />
+                                <x-input-error :messages="$errors->get('email')" class="mt-1 text-xs" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Phone Number <span class="text-red-400">*</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="tel" name="phone_number" :value="old('phone_number')" required autocomplete="tel" placeholder="09XXXXXXXXX" />
+                                <x-input-error :messages="$errors->get('phone_number')" class="mt-1 text-xs" />
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end mt-8">
+                            <button type="button" onclick="nextStep()"
+                                class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm shadow-indigo-200 transition-all duration-150">
+                                Next
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- ───── STEP 2 · Academic ───── --}}
+                    <div class="step hidden">
+                        <h2 class="text-xl font-semibold text-slate-800 pb-4 mb-6 border-b border-slate-100">Academic Background</h2>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">High School <span class="text-red-400">*</span></label>
+                            <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                type="text" name="high_school" :value="old('high_school')" required autocomplete="organization" />
+                            <x-input-error :messages="$errors->get('high_school')" class="mt-1 text-xs" />
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Year of Graduation <span class="text-red-400">*</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="date" name="HS_grad_date" :value="old('HS_grad_date')" required autocomplete="off" />
+                                <x-input-error :messages="$errors->get('HS_grad_date')" class="mt-1 text-xs" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Strand <span class="text-red-400">*</span></label>
+                                <select name="Strand"
+                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-8 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                                    <option value="" disabled {{ old('Strand')?'':'selected' }}>Select strand…</option>
+                                    @foreach(['TVL','HUMSS','STEM','ABM','GAS','Arts & Design','Sports'] as $s)
+                                        <option value="{{ $s }}" {{ old('Strand')==$s?'selected':'' }}>{{ $s }}</option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('Strand')" class="mt-1 text-xs" />
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 my-6">
+                            <span class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">College</span>
+                            <span class="text-[10px] text-slate-400">(if applicable)</span>
+                            <div class="flex-1 h-px bg-slate-100"></div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">College <span class="font-normal normal-case text-slate-400">(optional)</span></label>
+                            <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                type="text" name="college" :value="old('college')" autocomplete="organization" />
+                            <x-input-error :messages="$errors->get('college')" class="mt-1 text-xs" />
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Graduation Date <span class="font-normal normal-case text-slate-400">(optional)</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="date" name="col_grad_date" :value="old('col_grad_date')" autocomplete="off" />
+                                <x-input-error :messages="$errors->get('col_grad_date')" class="mt-1 text-xs" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Previous Field of Study <span class="font-normal normal-case text-slate-400">(optional)</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="text" name="prev_field" :value="old('prev_field')" autocomplete="off" />
+                                <x-input-error :messages="$errors->get('prev_field')" class="mt-1 text-xs" />
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" onclick="prevStep()" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all duration-150 active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
+                            </button>
+                            <button type="button" onclick="nextStep()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm shadow-indigo-200 transition-all duration-150">
+                                Next <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- ───── STEP 3 · Program ───── --}}
+                    <div class="step hidden">
+                        <h2 class="text-xl font-semibold text-slate-800 pb-4 mb-6 border-b border-slate-100">Program &amp; Preferences</h2>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Program <span class="text-red-400">*</span></label>
+                            <select name="program" required
+                                class="block w-full rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-8 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                                <option value="" disabled {{ old('program')?'':'selected' }}>Select program…</option>
+                                <option value="BSIT" {{ old('program')=='BSIT'?'selected':'' }}>Bachelor of Science in Information Technology</option>
+                                <option value="BSCS" {{ old('program')=='BSCS'?'selected':'' }}>Bachelor of Science in Computer Science</option>
+                                <option value="BSIS" {{ old('program')=='BSIS'?'selected':'' }}>Bachelor of Science in Information Systems</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('program')" class="mt-1 text-xs" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Preferred Class Time <span class="text-red-400">*</span></label>
+                            <select name="preferred_time" required
+                                class="block w-full sm:w-52 rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-8 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                                <option value="" disabled {{ old('preferred_time')?'':'selected' }}>Select time…</option>
+                                <option value="morning"   {{ old('preferred_time')=='morning'  ?'selected':'' }}>Morning</option>
+                                <option value="afternoon" {{ old('preferred_time')=='afternoon'?'selected':'' }}>Afternoon</option>
+                                <option value="evening"   {{ old('preferred_time')=='evening'  ?'selected':'' }}>Evening</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('preferred_time')" class="mt-1 text-xs" />
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" onclick="prevStep()" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all duration-150 active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
+                            </button>
+                            <button type="button" onclick="nextStep()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm shadow-indigo-200 transition-all duration-150">
+                                Next <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- ───── STEP 4 · Address ───── --}}
+                    <div class="step hidden">
+                        <h2 class="text-xl font-semibold text-slate-800 pb-4 mb-6 border-b border-slate-100">Home Address</h2>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">House / Unit No. <span class="font-normal normal-case text-slate-400">(optional)</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="text" name="house_number" :value="old('house_number')" autocomplete="address-line1" />
+                                <x-input-error :messages="$errors->get('house_number')" class="mt-1 text-xs" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Street <span class="font-normal normal-case text-slate-400">(optional)</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="text" name="street" :value="old('street')" autocomplete="address-line2" />
+                                <x-input-error :messages="$errors->get('street')" class="mt-1 text-xs" />
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Barangay <span class="text-red-400">*</span></label>
+                            <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                type="text" name="barangay" :value="old('barangay')" required autocomplete="address-level3" />
+                            <x-input-error :messages="$errors->get('barangay')" class="mt-1 text-xs" />
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">City / Municipality <span class="text-red-400">*</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="text" name="city" :value="old('city')" required autocomplete="address-level2" />
+                                <x-input-error :messages="$errors->get('city')" class="mt-1 text-xs" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Province <span class="text-red-400">*</span></label>
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                    type="text" name="province" :value="old('province')" required autocomplete="address-level1" />
+                                <x-input-error :messages="$errors->get('province')" class="mt-1 text-xs" />
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Postal Code <span class="text-red-400">*</span></label>
+                            <x-text-input class="block w-28 rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                type="text" inputmode="numeric" name="postal_code" :value="old('postal_code')" required autocomplete="postal-code" maxlength="4" />
+                            <x-input-error :messages="$errors->get('postal_code')" class="mt-1 text-xs" />
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" onclick="prevStep()" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all duration-150 active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
+                            </button>
+                            <button type="button" onclick="nextStep()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm shadow-indigo-200 transition-all duration-150">
+                                Next <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- ───── STEP 5 · Account ───── --}}
+                    <div class="step hidden">
+                        <h2 class="text-xl font-semibold text-slate-800 pb-4 mb-6 border-b border-slate-100">Create Your Account</h2>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Password <span class="text-red-400">*</span></label>
+                            <x-text-input id="password"
+                                class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                type="password" name="password" required autocomplete="new-password" />
+                            <x-input-error :messages="$errors->get('password')" class="mt-1 text-xs" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Confirm Password <span class="text-red-400">*</span></label>
+                            <x-text-input id="password_confirmation"
+                                class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                type="password" name="password_confirmation" required autocomplete="new-password" />
+                            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1 text-xs" />
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" onclick="prevStep()" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all duration-150 active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
+                            </button>
+                            <button type="submit" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-7 py-2.5 rounded-lg shadow-md shadow-indigo-200 transition-all duration-150">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                Submit Application
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <p class="text-center text-sm text-slate-400 mt-5">
+                Already have an account?
+                <a href="{{ route('login') }}" class="text-indigo-600 font-semibold hover:underline">Sign in</a>
+            </p>
+
+        </div>
+    </div>
+
+    {{-- Toast --}}
+    <div id="toast"
+         class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-500 text-white text-sm font-medium px-5 py-2.5 rounded-full shadow-lg shadow-red-200 z-50 hide">
+        Please fill in all required fields.
+    </div>
+
     <script>
         let currentStep = 0;
-        const steps = document.querySelectorAll('.step');
-        const indicators = document.querySelectorAll('.step-indicator');
-        const progressBar = document.getElementById('progressBar');
+        const steps  = document.querySelectorAll('.step');
+        const items  = document.querySelectorAll('.step-item');
+        const bar    = document.getElementById('progressBar');
+        const toast  = document.getElementById('toast');
+        let toastTimer;
 
-        function showStep(index) {
-            steps.forEach((step, i) => {
-                step.classList.toggle('hidden', i !== index);
-            });
+        function showStep(i) {
+            steps.forEach((s, idx) => s.classList.toggle('hidden', idx !== i));
 
-            indicators.forEach((ind, i) => {
-                ind.classList.remove('active', 'done');
+            items.forEach((item, idx) => {
+                const bubble = item.querySelector('.step-bubble');
+                const label  = item.querySelector('.step-label');
 
-                if (i < index) {
-                    ind.classList.add('done');
-                    ind.innerHTML = "✔";
-                } else if (i === index) {
-                    ind.classList.add('active');
-                    ind.innerHTML = i + 1;
+                bubble.className = 'step-bubble w-9 h-9 rounded-full border-2 flex items-center justify-center text-xs font-semibold shadow-sm transition-all duration-300';
+
+                if (idx < i) {
+                    bubble.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
+                    bubble.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>';
+                    if (label) { label.classList.remove('text-slate-400','text-indigo-600'); label.classList.add('text-emerald-500'); }
+                } else if (idx === i) {
+                    bubble.classList.add('bg-indigo-600', 'border-indigo-600', 'text-white', 'ring-4', 'ring-indigo-100');
+                    bubble.textContent = idx + 1;
+                    if (label) { label.classList.remove('text-slate-400','text-emerald-500'); label.classList.add('text-indigo-600'); }
                 } else {
-                    ind.innerHTML = i + 1;
+                    bubble.classList.add('border-slate-200', 'bg-white', 'text-slate-400');
+                    bubble.textContent = idx + 1;
+                    if (label) { label.classList.remove('text-indigo-600','text-emerald-500'); label.classList.add('text-slate-400'); }
                 }
             });
 
-            progressBar.style.width = ((index + 1) / steps.length) * 100 + "%";
+            bar.style.width = ((i + 1) / steps.length * 100) + '%';
+            document.querySelector('.bg-white.rounded-2xl').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function showToast(msg) {
+            toast.textContent = msg || 'Please fill in all required fields.';
+            toast.classList.remove('hide');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.add('hide'), 3200);
         }
 
         function validateStep() {
-            let inputs = steps[currentStep].querySelectorAll("input, select, textarea");
-
-            for (let input of inputs) {
-                if (input.hasAttribute("required") && !input.value) {
-                    input.classList.add("border-red-500");
-                    alert("Please fill all required fields.");
-                    return false;
+            const required = steps[currentStep].querySelectorAll('input[required], select[required]');
+            let ok = true;
+            required.forEach(el => {
+                el.classList.remove('border-red-400', 'ring-red-100');
+                if (!el.value.trim()) {
+                    el.classList.add('border-red-400', 'ring-2', 'ring-red-100');
+                    ok = false;
                 }
-            }
-            return true;
+            });
+            if (!ok) showToast('Please fill in all required fields.');
+            return ok;
         }
 
         function nextStep() {
             if (!validateStep()) return;
-
-            if (currentStep < steps.length - 1) {
-                currentStep++;
-                showStep(currentStep);
-            }
+            if (currentStep < steps.length - 1) { currentStep++; showStep(currentStep); }
         }
-
         function prevStep() {
-            if (currentStep > 0) {
-                currentStep--;
-                showStep(currentStep);
-            }
+            if (currentStep > 0) { currentStep--; showStep(currentStep); }
         }
 
-        showStep(currentStep);
+        showStep(0);
     </script>
+
 </x-guest-layout>

@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('professors', function (Blueprint $table) {
             $table->id();
             $table->foreignId('profile_id')->constrained()->onDelete('cascade');
+            $table->string('professor_number')->nullable();
             $table->foreignId('department_id')->constrained()->onDelete('cascade');
             $table->string('specialization')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });
     }

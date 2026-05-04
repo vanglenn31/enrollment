@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 
-#[Fillable([ 'email', 'password', 'role_id'])]
+#[Fillable([ 'email', 'password', 'role_id', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -41,5 +41,14 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function profile(): HasOne {
         return $this->hasOne(Profile::class);
+    }
+
+    public function registrar(): HasOne {
+        return $this->hasOne(Registrar::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

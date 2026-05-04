@@ -17,7 +17,7 @@ class AdminSeeder extends Seeder
             'email' => 'admin@gmail.com',
             'password' => 'password123',
             'email_verified_at' => now(),
-            'role_id' => 4, //admin role id
+            'role_id' => 3, //admin role id
         ]);
     }
 }

@@ -5,7 +5,7 @@
         </div>
         <div class="hidden md:block">
             <h3 class="sm:text-md lg:text-xl md:text:xlg">UIM OES</h3>
-            <p class="sm:text-[1rem] lg:text-md">University of International Mindandao</p>
+            <p class="sm:text-[1rem] lg:text-md">University of International Mindanao</p>
         </div>
 
     </div>
@@ -13,11 +13,11 @@
             <img src="{{ Vite::asset('resources/images/hamburger.svg') }}" alt="humburger icon" class="w-[2rem] h-full hover:opacity-60 outline-2">
         </button>
     <div class="hidden lg:block flex flex-row items-center md:text-lg lg:text-xl xl:text-xl 2xl:4xl "> 
-        <ul class="w-full grid grid-cols-4 justify-items-center gap-2">
+        <ul class="w-full grid grid-cols-3 justify-items-center gap-2">
             <li class="grid place-items-center"><a href="{{ route('index') }}" class="{{ request()->routeIs('index') ? 'bg-sky-200' : ''  }} hover:bg-gray-300  w-full py-2 px-4 rounded-xl active:bg-sky-400 transition-colors duration-200 ease-in">Home</a></li>
             <li class="grid place-items-center"><a href="{{ route('programs') }}" class="{{ request()->routeIs('programs') ? 'bg-sky-200' : 'text-black'  }} hover:bg-gray-300 w-full py-2 px-4 rounded-xl active:bg-sky-100 transition-colors duration-200 ease-in">Programs</a></li>
             <li class="grid place-items-center"><a href="{{ route('admission') }}" class="{{ request()->routeIs('admission') ? 'bg-sky-100' : 'text-black '  }} hover:bg-gray-300 w-full py-2 px-4 rounded-xl active:bg-sky-100 transition-colors duration-200 ease-in">Admissions</a></li>
-            <li class="grid place-items-center"><a href="{{ route('FAQ') }}" class="{{ request()->routeIs('FAQ') ? 'bg-sky-100' : 'text-black'  }} hover:hover:bg-gray-300 w-full py-2 px-4 rounded-xl active:bg-sky-100 duration-200 ease-in">FAQ</a></li>
+            <!-- <li class="grid place-items-center"><a href="{{ route('FAQ') }}" class="{{ request()->routeIs('FAQ') ? 'bg-sky-100' : 'text-black'  }} hover:hover:bg-gray-300 w-full py-2 px-4 rounded-xl active:bg-sky-100 duration-200 ease-in">FAQ</a></li> -->
         </ul>
     </div>
     <div class="hidden lg:block flex flex-row items-end md:text-lg lg:text:xl text-nowrap">
@@ -53,9 +53,9 @@
             Admissions
         </a>
 
-        <a href="{{ route('FAQ') }}" class="py-2 hover:bg-blue-100 rounded">
+        <!-- <a href="{{ route('FAQ') }}" class="py-2 hover:bg-blue-100 rounded">
             FAQ
-        </a>
+        </a> -->
 
         <hr class="opacity-30">
 

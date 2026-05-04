@@ -1,40 +1,43 @@
 <nav x-data="{ open: false }"
-    class="sticky top-0 z-50 w-full ml-auto h-16 lg:h-24 xl:h-28 bg-first shadow-xl px-4 sm:px-6 lg:px-10">
+    class="sticky top-0 z-50 w-full h-16 sm:h-16 lg:h-20 xl:h-24 bg-first shadow-md px-3 sm:px-4 lg:px-8">
 
-    <div class="w-full mx-auto h-full flex items-center justify-between">
+    <div class="w-full mx-auto h-full flex items-center justify-between gap-2">
 
         <!-- LEFT: Search -->
-        <div class="flex-1 max-w-xs sm:max-w-sm md:max-w-md">
-            <div class="flex items-center bg-gray-100 rounded-lg px-3 py-2">
-                <svg class="w-4 h-4 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
-                </svg>
-                <input type="text" placeholder="Search here"
-                    class="bg-transparent outline-none w-full text-sm">
+        <div class="flex-1 flex items-center">
+            <div>
+                <h1 class="text-black font-bold text-sm sm:text-base lg:text-lg xl:text-xl leading-tight">
+                    University of International Mindanao
+                </h1>
+                <p class="text-white/70 text-[10px] sm:text-xs">
+                    Enrollment Management System
+                </p>
             </div>
         </div>
 
         <!-- RIGHT SIDE -->
-        <div class=" flex items-center space-x-3 sm:space-x-4">
+        <div class="flex items-center gap-2 sm:gap-3 lg:gap-4">
 
             <!-- Bell -->
-            <button class="hidden md:block p-2 rounded-full hover:bg-gray-100">
-                <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button class="hidden sm:flex p-2 rounded-full hover:bg-gray-100 transition">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 11-6 0"/>
                 </svg>
             </button>
 
             <!-- Profile Dropdown -->
-            <div class="hidden md:block sm:flex sm:items-center">
+            <div class="hidden sm:flex items-center">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="flex items-center gap-2 px-3 py-2 rounded-md bg-white hover:bg-gray-100 transition">
-                            <img src="/profile.jpg" class=" hidden md:block w-12 h-12 rounded-full pr-6" alt="Profile Picture" >
+                        <button class="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md bg-white hover:bg-gray-100 transition">
 
-                            <span class="text-lg font-medium">
-                               @if(Auth::user()->role?->role === 'admin')
+                            <img src="/profile.jpg"
+                                 class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+                                 alt="Profile Picture">
+
+                            <span class="hidden md:block text-sm lg:text-base font-medium">
+                                @if(Auth::user()->role?->role === 'admin')
                                     admin
                                 @else
                                     {{ Auth::user()->profile?->last_name }}
@@ -64,7 +67,7 @@
             </div>
 
             <!-- Mobile Hamburger -->
-            <div class="hidden">
+            <div class="sm:hidden">
                 <button @click="open = !open"
                     class="p-2 rounded-md hover:bg-gray-100 transition">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -75,23 +78,76 @@
                     </svg>
                 </button>
             </div>
+
         </div>
     </div>
 
     <!-- MOBILE DROPDOWN -->
-    <div x-show="open" class="sm:hidden px-4 pb-4 space-y-2">
+    <div x-show="open" x-transition
+     class="sm:hidden px-3 pb-3 space-y-2 bg-white shadow-md rounded-b-lg">
 
-        <x-responsive-nav-link :href="route('profile.edit')">
-            Profile
+    <!-- NAVIGATION LINKS BASED ON ROLE -->
+    @php
+        $role = auth()->user()->role->role;
+    @endphp
+
+    @if($role === 'admin')
+        <x-responsive-nav-link :href="route('admin.dashboard')">
+            Dashboard
         </x-responsive-nav-link>
 
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <x-responsive-nav-link :href="route('logout')"
-                onclick="event.preventDefault(); this.closest('form').submit();">
-                Log Out
-            </x-responsive-nav-link>
-        </form>
-    </div>
+        <x-responsive-nav-link :href="route('admin.course')">
+            Courses
+        </x-responsive-nav-link>
+
+        <x-responsive-nav-link :href="route('admin.department')">
+            Department
+        </x-responsive-nav-link>
+
+        <x-responsive-nav-link :href="route('admin.programs')">
+            Programs
+        </x-responsive-nav-link>
+
+        <x-responsive-nav-link :href="route('admin.students')">
+            Students
+        </x-responsive-nav-link>
+
+        <x-responsive-nav-link :href="route('admin.enrollment')">
+            Enrollment
+        </x-responsive-nav-link>
+
+        <x-responsive-nav-link :href="route('admin.professors')">
+            Professors
+        </x-responsive-nav-link>
+
+        <x-responsive-nav-link :href="route('admin.registrars')">
+            Registrar
+        </x-responsive-nav-link>
+
+        <x-responsive-nav-link :href="route('admin.payments')">
+            Payments
+        </x-responsive-nav-link>
+        
+        <x-responsive-nav-link :href="route('admin.rooms')">
+            Rooms
+        </x-responsive-nav-link>
+    @endif
+
+
+    <!-- PROFILE -->
+    <x-responsive-nav-link :href="route('profile.edit')">
+        Profile
+    </x-responsive-nav-link>
+
+    <!-- LOGOUT -->
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <x-responsive-nav-link :href="route('logout')"
+            onclick="event.preventDefault(); this.closest('form').submit();">
+            Log Out
+        </x-responsive-nav-link>
+    </form>
+
+</div>
 
 </nav>

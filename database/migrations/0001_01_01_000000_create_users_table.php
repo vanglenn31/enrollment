@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('password');
             $table->foreignId('role_id')->nullable();
             $table->rememberToken();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
 

@@ -3,7 +3,7 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
     <div class="h-[80vh] flex justify-center">
-        <form method="POST" action="{{ route('login') }}" class="w-[90%] h-fit xl:w-[40rem] xl:h-fit  bg-slate-50 p-4 mx-auto my-auto flex flex-col justify-center shadow-lg shadow-gray-500 rounded-xl">
+        <form method="POST" action="{{ route('login') }}" class="w-[90%] h-fit md:w-[20rem] xl:h-fit  bg-slate-50 p-4 mx-auto my-auto flex flex-col justify-center shadow-lg shadow-gray-500 rounded-xl">
             @csrf
 
             <!-- Email Address -->

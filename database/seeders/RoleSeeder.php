@@ -15,8 +15,9 @@ class RoleSeeder extends Seeder
     {
         Roles::insert([
             ['role' => 'student'],
-            ['role' => 'teller'],
+            // ['role' => 'teller'],
             ['role' => 'registrar'],
+            // ['role' => 'operator'],
             ['role' => 'admin'],
         ]);
     }

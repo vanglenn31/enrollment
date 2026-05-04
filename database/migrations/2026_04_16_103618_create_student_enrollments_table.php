@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id')->constrained()->onDelete('cascade');
             $table->foreignId('term_id')->constrained()->onDelete('cascade');
-            $table->enum('status', ['pending', 'unenrolled', 'enrolled', 'completed'])->default('pending');
+            $table->enum('status', ['unverified', 'verified', 'unenrolled', 'enrolled', 'completed'])->default('unverified');            
+            $table->foreignId('course_id')->nullable()->constrained()->onDelete('cascade')->after('student_id');
             $table->timestamps();
         });
     }
