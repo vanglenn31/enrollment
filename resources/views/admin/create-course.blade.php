@@ -51,7 +51,6 @@
                           class="space-y-5">
                         @csrf
 
-                        <!-- GRID -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                             <!-- Course Name -->
@@ -125,14 +124,32 @@
                                 </select>
                             </div>
 
-                            <!-- Time -->
+                           <div>
+                                <label class="text-sm font-medium text-gray-700">Schedule Type</label>
+                                <select name="schedule_type"
+                                        class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Select Schedule</option>
+                                    <option value="MWF">MWF (Mon-Wed-Fri)</option>
+                                    <option value="TTH">TTH (Tue-Thu-Sat)</option>
+                                    <option value="DAILY">Daily (Mon-Sat)</option>
+                                </select>
+                            </div>
+
+                            <!-- START TIME -->
                             <div>
-                                <label class="text-sm font-medium text-gray-700">Schedule</label>
-                                <input type="time" name="time"
+                                <label class="text-sm font-medium text-gray-700">Start Time</label>
+                                <input type="time" name="start_time"
                                        class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
-                            <!-- Price -->
+                            <!-- END TIME -->
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">End Time</label>
+                                <input type="time" name="end_time"
+                                       class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+
+                            <!-- PRICE -->
                             <div>
                                 <label class="text-sm font-medium text-gray-700">Price</label>
                                 <input type="number" step="0.01" name="course_price"

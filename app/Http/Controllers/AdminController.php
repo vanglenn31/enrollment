@@ -234,64 +234,138 @@ class AdminController extends Controller
 }
 
     public function updateCourse(Request $request, Course $course)
-    {
-        $validated = $request->validate([
-            'course_name' => 'required|string|max:255',
-            'course_code' => 'required|string|max:100|unique:courses,course_code,' . $course->id,
-            'description' => 'nullable|string|max:1000',
-            'units' => 'required|integer|min:1',
-            'course_price' => 'nullable|numeric|min:0',
-            'time' => 'nullable|date_format:H:i',
-            'program_id' => 'nullable|exists:programs,id',
-            'professor_id' => 'nullable|exists:professors,id',
-            'room_id' => 'nullable|exists:rooms,id',
-        ]);
+{
+    $validated = $request->validate([
+        'course_name' => 'required|string|max:255',
+        'course_code' => 'required|string|max:100|unique:courses,course_code,' . $course->id,
+        'description' => 'nullable|string|max:1000',
+        'units' => 'required|integer|min:1',
+        'course_price' => 'nullable|numeric|min:0',
 
-        if (empty($validated['program_id'])) {
-            $generalProgram = Program::firstOrCreate([
-                'code' => 'GEN',
-            ], [
+        // ❌ REMOVE OLD
+        // 'time' => 'nullable|date_format:H:i',
+
+        // ✅ NEW SCHEDULE FIELDS
+        'schedule_type' => 'required|in:MWF,TTH,DAILY',
+        'start_time' => 'required|date_format:H:i',
+        'end_time' => 'required|date_format:H:i|after:start_time',
+
+        'program_id' => 'nullable|exists:programs,id',
+        'professor_id' => 'nullable|exists:professors,id',
+        'room_id' => 'nullable|exists:rooms,id',
+    ]);
+
+    // Auto assign GEN program if empty
+    if (empty($validated['program_id'])) {
+        $generalProgram = Program::firstOrCreate(
+            ['code' => 'GEN'],
+            [
                 'name' => 'General Education',
                 'department_id' => null,
-            ]);
+            ]
+        );
 
-            $validated['program_id'] = $generalProgram->id;
-        }
-
-        $course->update($validated);
-
-        return redirect()->route('admin.course')->with('success', 'Course updated successfully.');
+        $validated['program_id'] = $generalProgram->id;
     }
+
+    // OPTIONAL: schedule map (future use)
+    $scheduleMap = [
+        'MWF' => ['MON', 'WED', 'FRI'],
+        'TTH' => ['TUE', 'THU', 'SAT'],
+        'DAILY' => ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
+    ];
+
+    $courseDays = $scheduleMap[$validated['schedule_type']] ?? [];
+
+    // UPDATE COURSE
+    $course->update([
+        'course_name' => $validated['course_name'],
+        'course_code' => $validated['course_code'],
+        'description' => $validated['description'] ?? null,
+        'units' => $validated['units'],
+        'course_price' => $validated['course_price'] ?? null,
+
+        'program_id' => $validated['program_id'],
+        'professor_id' => $validated['professor_id'],
+        'room_id' => $validated['room_id'],
+
+        // ✅ IMPORTANT FIX
+        'schedule_type' => $validated['schedule_type'],
+        'start_time' => $validated['start_time'],
+        'end_time' => $validated['end_time'],
+    ]);
+
+    return redirect()
+        ->route('admin.course')
+        ->with('success', 'Course updated successfully.');
+}
 
     public function storeCourse(Request $request)
-    {
-        $validated = $request->validate([
-            'course_name' => 'required|string|max:255',
-            'course_code' => 'required|string|max:100|unique:courses,course_code',
-            'description' => 'nullable|string|max:1000',
-            'units' => 'required|integer|min:1',
-            'course_price' => 'nullable|numeric|min:0',
-            'time' => 'nullable|date_format:H:i',
-            'program_id' => 'nullable|exists:programs,id',
-            'professor_id' => 'nullable|exists:professors,id',
-            'room_id' => 'nullable|exists:rooms,id',
-        ]);
+{
+    $validated = $request->validate([
+        'course_name' => 'required|string|max:255',
+        'course_code' => 'required|string|max:100|unique:courses,course_code',
+        'description' => 'nullable|string|max:1000',
+        'units' => 'required|integer|min:1',
+        'course_price' => 'nullable|numeric|min:0',
 
-        if (empty($validated['program_id'])) {
-            $generalProgram = Program::firstOrCreate([
-                'code' => 'GEN',
-            ], [
+        // ❌ REMOVE OLD "time"
+        // 'time' => 'nullable|date_format:H:i',
+
+        // ✅ NEW SCHEDULE FIELDS
+        'schedule_type' => 'required|in:MWF,TTH,DAILY',
+        'start_time' => 'required|date_format:H:i',
+        'end_time' => 'required|date_format:H:i|after:start_time',
+
+        'program_id' => 'nullable|exists:programs,id',
+        'professor_id' => 'nullable|exists:professors,id',
+        'room_id' => 'nullable|exists:rooms,id',
+    ]);
+
+    // Auto assign GEN program if empty
+    if (empty($validated['program_id'])) {
+        $generalProgram = Program::firstOrCreate(
+            ['code' => 'GEN'],
+            [
                 'name' => 'General Education',
                 'department_id' => null,
-            ]);
+            ]
+        );
 
-            $validated['program_id'] = $generalProgram->id;
-        }
-
-        Course::create($validated);
-
-        return redirect()->route('admin.course')->with('success', 'Course added successfully.');
+        $validated['program_id'] = $generalProgram->id;
     }
+
+    // OPTIONAL: schedule map (future use)
+    $scheduleMap = [
+        'MWF' => ['MON', 'WED', 'FRI'],
+        'TTH' => ['TUE', 'THU', 'SAT'],
+        'DAILY' => ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
+    ];
+
+    $courseDays = $scheduleMap[$validated['schedule_type']] ?? [];
+
+    // SAVE COURSE (IMPORTANT FIX HERE)
+    Course::create([
+        'course_name' => $validated['course_name'],
+        'course_code' => $validated['course_code'],
+        'description' => $validated['description'] ?? null,
+        'units' => $validated['units'],
+        'course_price' => $validated['course_price'] ?? null,
+
+        'program_id' => $validated['program_id'],
+        'professor_id' => $validated['professor_id'],
+        'room_id' => $validated['room_id'],
+
+        // ✅ CRITICAL FIX
+        'schedule_type' => $validated['schedule_type'],
+        'start_time' => $validated['start_time'],
+        'end_time' => $validated['end_time'],
+    ]);
+
+    return redirect()
+        ->route('admin.course')
+        ->with('success', 'Course added successfully.');
+}
 
     public function deactivateCourse(Course $course)
     {
@@ -339,7 +413,7 @@ class AdminController extends Controller
 {
     $search = $request->input('search');
 
-    $verifiedStudents = Student::where('is_verified', 'verified')
+    $verifiedStudents = Student::where('is_verified', true)
         ->when($search, function ($query, $search) {
             $query->where(function ($q) use ($search) {
                 $q->where('student_number', 'like', "%{$search}%")
@@ -374,44 +448,100 @@ class AdminController extends Controller
     }
 
     public function storeEnrollment(Request $request, Student $student)
-    {
-        $validated = $request->validate([
-            'course_id' => 'required|exists:courses,id',
+{
+    $validated = $request->validate([
+        'course_id' => 'required|exists:courses,id',
+    ]);
+
+    $scheduleMap = [
+        'MWF' => ['MON', 'WED', 'FRI'],
+        'TTH' => ['TUE', 'THU', 'SAT'],
+        'DAILY' => ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
+    ];
+
+    // ✅ FETCH COURSE FIRST (IMPORTANT)
+    $course = Course::findOrFail($validated['course_id']);
+
+    // (optional future use)
+    $courseDays = $scheduleMap[$course->schedule_type] ?? [];
+
+    // Program restriction
+    $generalProgram = Program::firstWhere('code', 'GEN');
+    $allowedProgramIds = array_filter([$student->program, $generalProgram?->id]);
+
+    if (!in_array($course->program_id, $allowedProgramIds, true)) {
+        return back()->withErrors([
+            'course_id' => 'This course does not belong to the student\'s program or general education.'
         ]);
+    }
 
-        $course = Course::findOrFail($validated['course_id']);
-        $generalProgram = Program::firstWhere('code', 'GEN');
-        $allowedProgramIds = array_filter([$student->program, $generalProgram?->id]);
-
-        if (! in_array($course->program_id, $allowedProgramIds, true)) {
-            return back()->withErrors(['course_id' => 'This course does not belong to the student\'s program or general education.']);
-        }
-
-        if ($student->studentEnrollments()->where('course_id', $course->id)->exists()) {
-            return back()->withErrors(['course_id' => 'This student is already enrolled in this course.']);
-        }
-
-        $currentTerm = Term::latest('id')->first() ?? Term::create([
+    // Active term
+    $currentTerm = Term::firstOrCreate(
+        ['status' => 'active'],
+        [
             'school_year' => date('Y') . '-' . (date('Y') + 1),
             'semester' => 'First',
+        ]
+    );
+
+    // Duplicate course check (same course name)
+    $alreadyEnrolled = $student->studentEnrollments()
+        ->where('term_id', $currentTerm->id)
+        ->whereHas('course', function ($q) use ($course) {
+            $q->where('course_name', $course->course_name);
+        })
+        ->exists();
+
+    if ($alreadyEnrolled) {
+        return back()->withErrors([
+            'course_id' => 'Already enrolled in this course for this term.'
         ]);
-
-        $termId = $student->studentEnrollments()->latest('id')->value('term_id') ?? $currentTerm->id;
-
-        $student->studentEnrollments()->create([
-            'course_id' => $course->id,
-            'enrollment_date' => now(),
-            'term_id' => $termId,
-            'status' => 'enrolled',
-        ]);
-
-        if ($student->status !== 'enrolled') {
-            $student->status = 'enrolled';
-            $student->save();
-        }
-
-        return redirect()->route('admin.enrollment.assign', $student)->with('success', 'Course assigned successfully. Student status updated to enrolled.');
     }
+
+    // Schedule conflict check
+    $hasTimeConflict = $student->studentEnrollments()
+        ->where('term_id', $currentTerm->id)
+        ->whereHas('course', function ($q) use ($course) {
+
+            $q->where('schedule_type', $course->schedule_type)
+              ->where(function ($timeQuery) use ($course) {
+
+                  $timeQuery->whereBetween('start_time', [$course->start_time, $course->end_time])
+                            ->orWhereBetween('end_time', [$course->start_time, $course->end_time])
+                            ->orWhere(function ($q2) use ($course) {
+                                $q2->where('start_time', '<=', $course->start_time)
+                                   ->where('end_time', '>=', $course->end_time);
+                            });
+
+              });
+
+        })
+        ->exists();
+
+    if ($hasTimeConflict) {
+        return back()->withErrors([
+            'course_id' => 'Schedule conflict detected with another enrolled course.'
+        ]);
+    }
+
+    // Create enrollment
+    $student->studentEnrollments()->create([
+        'course_id' => $course->id,
+        'enrollment_date' => now(),
+        'term_id' => $currentTerm->id,
+        'status' => 'enrolled',
+        'units' => $course->units,
+    ]);
+
+    // Update student status
+    if ($student->status !== 'enrolled') {
+        $student->update(['status' => 'enrolled']);
+    }
+
+    return redirect()
+        ->route('admin.enrollment.assign', $student)
+        ->with('success', 'Course assigned successfully.');
+}
 
     public function editEnrollment(StudentEnrollment $studentEnrollment)
     {
@@ -1003,5 +1133,50 @@ public function destroyRoom(Room $room)
     $room->delete();
     return redirect()->route('admin.rooms')->with('success', 'Room deleted.');
 }
+
+    // Get total units for a student in the current active term
+    public function getCurrentTermUnits(Student $student)
+    {
+        $currentTerm = Term::where('status', 'active')->latest('id')->first();
+        if (!$currentTerm) {
+            return 0;
+        }
+        return $student->studentEnrollments()
+            ->where('term_id', $currentTerm->id)
+            ->where('status', 'enrolled')
+            ->sum('units');
+    }
+
+    // End the current active term
+    public function endCurrentTerm()
+    {
+        $currentTerm = Term::where('status', 'active')->latest('id')->first();
+        if ($currentTerm) {
+            $currentTerm->update(['status' => 'ended']);
+            return back()->with('success', 'Current term ended successfully.');
+        }
+        return back()->withErrors(['term' => 'No active term found to end.']);
+    }
+
+    // Create a new academic term
+    public function createNewTerm(Request $request)
+    {
+        $validated = $request->validate([
+            'school_year' => 'required|string|max:20',
+            'semester' => 'required|string|max:50',
+        ]);
+
+        // End any currently active term
+        Term::where('status', 'active')->update(['status' => 'ended']);
+
+        // Create new active term
+        Term::create([
+            'school_year' => $validated['school_year'],
+            'semester' => $validated['semester'],
+            'status' => 'active',
+        ]);
+
+        return back()->with('success', 'New term created and set as active.');
+    }
 }
 

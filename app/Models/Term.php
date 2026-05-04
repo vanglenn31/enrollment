@@ -10,6 +10,7 @@ class Term extends Model
     protected $fillable = [
         'school_year',
         'semester',
+        'status',
     ];
 
     public function studentEnrollments(): HasMany

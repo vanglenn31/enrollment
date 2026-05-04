@@ -20,6 +20,9 @@ class Course extends Model
         'time',
         'status',
         'room_id',
+        'day',
+        'start_time',
+        'end_time',
     ];
 
     public function program(): BelongsTo

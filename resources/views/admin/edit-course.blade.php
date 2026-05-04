@@ -47,14 +47,14 @@
                     @endif
 
                     <!-- FORM -->
-                    <form action="{{ route('admin.courses.update', $course) }}" method="POST" class="space-y-5">
+                    <form action="{{ route('admin.courses.update', $course) }}" method="POST"
+                          class="space-y-5">
                         @csrf
                         @method('PUT')
 
-                        <!-- GRID -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                            <!-- Name -->
+                            <!-- Course Name -->
                             <div class="md:col-span-2">
                                 <label class="text-sm font-medium text-gray-700">Course Name</label>
                                 <input type="text" name="course_name" required
@@ -62,7 +62,7 @@
                                        class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
-                            <!-- Code -->
+                            <!-- Course Code -->
                             <div>
                                 <label class="text-sm font-medium text-gray-700">Course Code</label>
                                 <input type="text" name="course_code" required
@@ -115,6 +115,7 @@
                                     @endforeach
                                 </select>
                             </div>
+
                             <!-- Room -->
                             <div>
                                 <label class="text-sm font-medium text-gray-700">Room</label>
@@ -130,11 +131,45 @@
                                 </select>
                             </div>
 
-                            <!-- Time -->
+                            <!-- Schedule Type -->
                             <div>
-                                <label class="text-sm font-medium text-gray-700">Schedule</label>
-                                <input type="time" name="time"
-                                       value="{{ old('time', $course->time) }}"
+                                <label class="text-sm font-medium text-gray-700">Schedule Type</label>
+                                <select name="schedule_type"
+                                        class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+
+                                    <option value="">Select Schedule</option>
+
+                                    <option value="MWF"
+                                        {{ old('schedule_type', $course->schedule_type) == 'MWF' ? 'selected' : '' }}>
+                                        MWF (Mon-Wed-Fri)
+                                    </option>
+
+                                    <option value="TTH"
+                                        {{ old('schedule_type', $course->schedule_type) == 'TTH' ? 'selected' : '' }}>
+                                        TTH (Tue-Thu-Sat)
+                                    </option>
+
+                                    <option value="DAILY"
+                                        {{ old('schedule_type', $course->schedule_type) == 'DAILY' ? 'selected' : '' }}>
+                                        Daily (Mon-Sat)
+                                    </option>
+
+                                </select>
+                            </div>
+
+                            <!-- Start Time -->
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Start Time</label>
+                                <input type="time" name="start_time"
+                                       value="{{ old('start_time', $course->start_time) }}"
+                                       class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+
+                            <!-- End Time -->
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">End Time</label>
+                                <input type="time" name="end_time"
+                                       value="{{ old('end_time', $course->end_time) }}"
                                        class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 

@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->integer('units');
             $table->decimal('course_price', 10, 2)->nullable();
-            $table->time('time')->nullable();
             $table->timestamps();
         });
     }

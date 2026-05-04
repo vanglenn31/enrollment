@@ -14,6 +14,7 @@ class StudentEnrollment extends Model
         'enrollment_date',
         'term_id',
         'status',
+        'units',
     ];
 
     protected $casts = [
