@@ -29,7 +29,7 @@
                             </p>
                         </div>
 
-                        <a href="{{ route('admin.department') }}"
+                        <a href="{{ route('admin.department.department') }}"
                            class="text-sm text-blue-600 hover:text-blue-800">
                             Back
                         </a>

@@ -260,32 +260,39 @@
                 <!-- ─────────────────────────────────────────── -->
 
                 @php
-                    /* ── Conflict detection ─────────────────────────────
-                       Build a set of schedule_type+time ranges the student
-                       is already enrolled in so we can flag new courses.   */
-                    $enrolledSlots = $student->studentEnrollments
-                        ->whereNotNull('course_id')
-                        ->map(fn($e) => [
-                            'type'  => $e->course->schedule_type,
-                            'start' => $e->course->start_time,
-                            'end'   => $e->course->end_time,
-                        ]);
+    /* ── Enrolled slots ───────────────────────────── */
+    $enrolledSlots = $student->studentEnrollments
+        ->whereNotNull('course_id')
+        ->map(fn($e) => [
+            'type'  => $e->course->schedule_type,
+            'start' => $e->course->start_time,
+            'end'   => $e->course->end_time,
+            'name'  => $e->course->course_name,
+        ]);
 
-                    $hasConflict = function($course) use ($enrolledSlots) {
-                        foreach ($enrolledSlots as $slot) {
-                            if ($slot['type'] !== $course->schedule_type) continue;
-                            // Overlap: A.start < B.end AND A.end > B.start
-                            if ($slot['start'] < $course->end_time &&
-                                $slot['end']   > $course->start_time) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    };
+    /* ── Schedule conflict ───────────────────────── */
+    $hasConflict = function ($course) use ($enrolledSlots) {
+        foreach ($enrolledSlots as $slot) {
+            if ($slot['type'] !== $course->schedule_type) continue;
 
-                    /* ── Group by course_name ───────────────────────── */
-                    $grouped = $availableCourses->groupBy('course_name');
-                @endphp
+            if ($slot['start'] < $course->end_time &&
+                $slot['end'] > $course->start_time) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    /* ── Duplicate course name check ─────────────── */
+    $hasDuplicate = function ($course) use ($enrolledSlots) {
+        return $enrolledSlots->contains(function ($slot) use ($course) {
+            return $slot['name'] === $course->course_name;
+        });
+    };
+
+    /* ── Group courses ───────────────────────────── */
+    $grouped = $availableCourses->groupBy('course_name');
+@endphp
 
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
@@ -411,27 +418,37 @@
 
                                                             </div>
 
-                                                            {{-- Assign button (disabled if conflict) --}}
-                                                            @if(!$conflict)
-                                                                <form action="{{ route('admin.enrollment.store', $student) }}" method="POST" class="shrink-0">
-                                                                    @csrf
-                                                                    <input type="hidden" name="course_id" value="{{ $course->id }}">
-                                                                    <button type="submit"
-                                                                        class="btn-assign inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-xs font-semibold text-white transition-colors">
-                                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                                                                        </svg>
-                                                                        Assign
-                                                                    </button>
-                                                                </form>
-                                                            @else
-                                                                <span class="shrink-0 inline-flex items-center gap-1 rounded-lg bg-red-100 border border-red-200 px-4 py-2 text-xs font-semibold text-red-400 cursor-not-allowed">
-                                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                                                                    </svg>
-                                                                    Conflict
-                                                                </span>
-                                                            @endif
+                                                            {{-- Assign button (disabled if conflict OR already assigned) --}}
+@if(!$conflict && !$hasDuplicate($course))
+
+    <form action="{{ route('admin.enrollment.store', $student) }}" method="POST" class="shrink-0">
+        @csrf
+        <input type="hidden" name="course_id" value="{{ $course->id }}">
+
+        <button type="submit"
+            class="btn-assign inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-xs font-semibold text-white transition-colors">
+
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+
+            Assign
+        </button>
+    </form>
+
+@elseif($hasDuplicate($course))
+
+    <span class="shrink-0 inline-flex items-center gap-1 rounded-lg bg-yellow-100 border border-yellow-200 px-4 py-2 text-xs font-semibold text-yellow-600 cursor-not-allowed">
+        Already Assigned
+    </span>
+
+@else
+
+    <span class="shrink-0 inline-flex items-center gap-1 rounded-lg bg-red-100 border border-red-200 px-4 py-2 text-xs font-semibold text-red-400 cursor-not-allowed">
+        Conflict
+    </span>
+
+@endif
 
                                                         </div>
 

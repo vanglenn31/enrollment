@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\RegistrarController;
 use App\Http\Controllers\ProfessorController;
 use App\Http\Controllers\TermController;
@@ -60,22 +62,28 @@ Route::prefix('admin')
         Route::put('/enrollment/{studentEnrollment}', [AdminController::class, 'updateEnrollment'])->name('enrollment.update');
         Route::delete('/enrollment/{studentEnrollment}', [AdminController::class, 'removeEnrollment'])->name('enrollment.remove');
         Route::get('/payment', [AdminController::class, 'payment'])->name('payment');
-
-        Route::get('/department', [AdminController::class, 'department'])->name('department');
-        Route::get('/department/create', [AdminController::class, 'createDepartment'])->name('department.create');
-        Route::post('/department', [AdminController::class, 'storeDepartment'])->name('department.store');
-        Route::get('/department/{department}/edit', [AdminController::class, 'editDepartment'])->name('department.edit');
-        Route::put('/department/{department}', [AdminController::class, 'updateDepartment'])->name('department.update');
-        Route::patch('/department/{department}/deactivate', [AdminController::class, 'deactivateDepartment'])->name('department.deactivate');
-        Route::patch('/department/{department}/activate', [AdminController::class, 'activateDepartment'])->name('department.activate');
-
-        Route::get('/programs', [AdminController::class, 'programs'])->name('programs');
-        Route::get('/programs/create', [AdminController::class, 'createProgram'])->name('programs.create');
-        Route::post('/programs', [AdminController::class, 'storeProgram'])->name('programs.store');
-        Route::get('/programs/{program}/edit', [AdminController::class, 'editProgram'])->name('programs.edit');
-        Route::put('/programs/{program}', [AdminController::class, 'updateProgram'])->name('programs.update');
-        Route::patch('/programs/{program}/deactivate', [AdminController::class, 'deactivateProgram'])->name('programs.deactivate');
-        Route::patch('/programs/{program}/activate', [AdminController::class, 'activateProgram'])->name('programs.activate');
+        
+        Route::prefix('department')->name('department.')->group(function () {
+            Route::get('/', [DepartmentController::class, 'department'])->name('department');
+            Route::get('/create', [DepartmentController::class, 'createDepartment'])->name('create');
+            Route::post('/', [DepartmentController::class, 'storeDepartment'])->name('store');
+            Route::get('/{department}/edit', [DepartmentController::class, 'editDepartment'])->name('edit');
+            Route::put('/{department}', [DepartmentController::class, 'updateDepartment'])->name('update');
+            Route::patch('/{department}/deactivate', [DepartmentController::class, 'deactivateDepartment'])->name('deactivate');
+            Route::patch('/{department}/activate', [DepartmentController::class, 'activateDepartment'])->name('activate');
+        });
+        
+        Route::prefix('programs')->name('programs.')->group(function () {
+            Route::get('/programs', [ProgramController::class, 'programs'])->name('programs');
+            Route::get('/programs/create', [ProgramController::class, 'createProgram'])->name('create');
+            Route::post('/programs', [ProgramController::class, 'storeProgram'])->name('store');
+            Route::get('/programs/{program}/edit', [ProgramController::class, 'editProgram'])->name('edit');
+            Route::put('/programs/{program}', [ProgramController::class, 'updateProgram'])->name('update');
+            Route::patch('/programs/{program}/deactivate', [ProgramController::class, 'deactivateProgram'])->name('deactivate');
+            Route::patch('/programs/{program}/activate', [ProgramController::class, 'activateProgram'])->name('activate');
+        });
+            
+        
 
         Route::get('/students', [AdminController::class, 'students'])->name('students');
         Route::post('/students/{student}/verify', [AdminController::class, 'verifyStudent'])->name('students.verify');
@@ -111,19 +119,17 @@ Route::prefix('admin')
         Route::put('/rooms/{room}', [AdminController::class, 'updateRoom'])->name('rooms.update');
         Route::delete('/rooms/{room}', [AdminController::class, 'destroyRoom'])->name('rooms.destroy');
 
-        // ── TERMS ────────────────────────────────────────────────────────────
         Route::prefix('terms')->name('terms.')->group(function () {
-            Route::get('/',                           [TermController::class, 'index'])            ->name('index');
-            Route::get('/create',                     [TermController::class, 'create'])           ->name('create');
-            Route::post('/',                          [TermController::class, 'store'])            ->name('store');
-            Route::get('/{term}/edit',                [TermController::class, 'edit'])             ->name('edit');
-            Route::put('/{term}',                     [TermController::class, 'update'])           ->name('update');
-            Route::patch('/{term}/activate',          [TermController::class, 'activate'])         ->name('activate');
-            Route::patch('/{term}/end',               [TermController::class, 'end'])              ->name('end');
+            Route::get('/', [TermController::class, 'index'])->name('index');
+            Route::get('/create', [TermController::class, 'create'])->name('create');
+            Route::post('/', [TermController::class, 'store'])->name('store');
+            Route::get('/{term}/edit', [TermController::class, 'edit'])->name('edit');
+            Route::put('/{term}', [TermController::class, 'update'])->name('update');
+            Route::patch('/{term}/activate', [TermController::class, 'activate'])->name('activate');
+            Route::patch('/{term}/end', [TermController::class, 'end'])->name('end');
             Route::patch('/{term}/toggle-enrollment', [TermController::class, 'toggleEnrollment']) ->name('toggleEnrollment');
-            Route::delete('/{term}',                  [TermController::class, 'destroy'])          ->name('destroy');
+            Route::delete('/{term}', [TermController::class, 'destroy'])->name('destroy');
         });
-        // ─────────────────────────────────────────────────────────────────────
 
     });
 

@@ -53,7 +53,7 @@
             </a>
 
             <!-- Department -->
-            <a href="{{ route('admin.department') }}"
+            <a href="{{ route('admin.department.department') }}"
                class="{{ request()->routeIs('admin.department') ? 'bg-blue-400 text-white font-semibold shadow-sm' : 'text-gray-700 hover:bg-blue-200' }}
                flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,7 +64,7 @@
             </a>
 
             <!-- Programs -->
-            <a href="{{ route('admin.programs') }}"
+            <a href="{{ route('admin.programs.programs') }}"
                class="{{ request()->routeIs('admin.programs') ? 'bg-blue-400 text-white font-semibold shadow-sm' : 'text-gray-700 hover:bg-blue-200' }}
                flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

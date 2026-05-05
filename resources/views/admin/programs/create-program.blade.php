@@ -31,7 +31,7 @@
                             </p>
                         </div>
 
-                        <a href="{{ route('admin.programs') }}"
+                        <a href="{{ route('admin.programs.programs') }}"
                            class="text-sm text-blue-600 hover:text-blue-800">
                             Back
                         </a>

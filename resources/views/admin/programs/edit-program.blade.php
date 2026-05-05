@@ -32,7 +32,7 @@
                             </p>
                         </div>
 
-                        <a href="{{ route('admin.programs') }}"
+                        <a href="{{ route('admin.programs.programs') }}"
                            class="text-sm text-blue-600 hover:text-blue-800">
                             Back
                         </a>
@@ -104,7 +104,7 @@
                         <!-- ACTION -->
                         <div class="flex flex-col sm:flex-row justify-end gap-3 pt-2">
 
-                            <a href="{{ route('admin.programs') }}"
+                            <a href="{{ route('admin.programs.programs') }}"
                                class="text-center px-5 py-2 rounded-lg border text-gray-600 hover:bg-gray-100">
                                 Cancel
                             </a>

@@ -156,8 +156,8 @@
         @if($role === 'admin')
             <x-responsive-nav-link :href="route('admin.dashboard')">Dashboard</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.course')">Courses</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.department')">Department</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.programs')">Programs</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.department.department')">Department</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.programs.programs')">Programs</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.students')">Students</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.enrollment')">Enrollment</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.professors')">Professors</x-responsive-nav-link>

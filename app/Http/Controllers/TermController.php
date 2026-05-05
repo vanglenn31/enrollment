@@ -7,10 +7,7 @@ use Illuminate\Http\Request;
 
 class TermController extends Controller
 {
-    // ──────────────────────────────────────────────
-    //  Index – list all terms
-    // ──────────────────────────────────────────────
-
+ 
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -33,10 +30,6 @@ class TermController extends Controller
 
         return view('admin.terms.index', compact('terms', 'search', 'filter', 'activeTerm'));
     }
-
-    // ──────────────────────────────────────────────
-    //  Create / Store
-    // ──────────────────────────────────────────────
 
     public function create()
     {
@@ -72,9 +65,6 @@ class TermController extends Controller
             ->with('success', 'Term created successfully.');
     }
 
-    // ──────────────────────────────────────────────
-    //  Edit / Update
-    // ──────────────────────────────────────────────
 
     public function edit(Term $term)
     {
@@ -111,9 +101,7 @@ class TermController extends Controller
             ->with('success', 'Term updated successfully.');
     }
 
-    // ──────────────────────────────────────────────
-    //  Activate – sets this term as active
-    // ──────────────────────────────────────────────
+    
 
     public function activate(Term $term)
     {
@@ -126,9 +114,7 @@ class TermController extends Controller
         return back()->with('success', "Term {$term->label} is now active.");
     }
 
-    // ──────────────────────────────────────────────
-    //  End – manually close a term
-    // ──────────────────────────────────────────────
+   
 
     public function end(Term $term)
     {
@@ -144,10 +130,6 @@ class TermController extends Controller
         return back()->with('success', "Term {$term->label} has been ended.");
     }
 
-    // ──────────────────────────────────────────────
-    //  Toggle enrollment
-    // ──────────────────────────────────────────────
-
     public function toggleEnrollment(Term $term)
     {
         if ($term->status !== 'active') {
@@ -161,10 +143,7 @@ class TermController extends Controller
         return back()->with('success', "Enrollment has been {$state} for {$term->label}.");
     }
 
-    // ──────────────────────────────────────────────
-    //  Delete – only upcoming terms
-    // ──────────────────────────────────────────────
-
+  
     public function destroy(Term $term)
     {
         if ($term->status !== 'upcoming') {

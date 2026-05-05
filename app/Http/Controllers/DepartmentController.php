@@ -7,59 +7,64 @@ use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function department(Request $request)
     {
-        //
+        $search = $request->input('search');
+
+        $departments = Department::withCount('programs')
+            // ->where('status', 'active') may be added to show only the active departments 
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(10)  
+            ->withQueryString();
+
+        return view('admin.department', compact('departments', 'search'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function editDepartment(Department $department)
     {
-        //
+        return view('admin.edit-department', compact('department'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function updateDepartment(Request $request, Department $department)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $department->update($validated);
+
+        return redirect()->route('admin.department')->with('success', 'Department updated successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Department $department)
+    public function createDepartment()
     {
-        //
+        return view('admin.create-department');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Department $department)
+    public function storeDepartment(Request $request)
+    {   if (Department::where('name', $request->name)->exists()) {
+            return back()->withInput()->withErrors(['name' => 'A department with this name already exists.']);
+        }
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        Department::create(['name' => $request->name]);
+
+        return redirect()->route('admin.department.department')->with('success', 'Department added successfully.');
+    }
+    public function deactivateDepartment(Department $department)
     {
-        //
+        $department->update(['status' => 'inactive']);
+        return back()->with('success', 'Department deactivated.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Department $department)
+    public function activateDepartment(Department $department)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Department $department)
-    {
-        //
+        $department->update(['status' => 'active']);
+        return back()->with('success', 'Department activated.');
     }
 }

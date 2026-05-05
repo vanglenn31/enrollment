@@ -53,7 +53,7 @@
                             </div>
 
                             <!-- SEARCH -->
-                            <form method="GET" action="{{ route('admin.programs') }}" class="w-full sm:w-80">
+                            <form method="GET" action="{{ route('admin.programs.programs') }}" class="w-full sm:w-80">
                                 <div class="flex bg-gray-100 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500">
                                     <input name="search" value="{{ $search ?? '' }}"
                                            type="text"

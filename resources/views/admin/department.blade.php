@@ -53,7 +53,7 @@
                             </div>
 
                             <!-- SEARCH -->
-                            <form method="GET" action="{{ route('admin.department') }}" class="w-full sm:w-80">
+                            <form method="GET" action="{{ route('admin.department.department') }}" class="w-full sm:w-80">
                                 <div class="flex bg-gray-100 rounded-xl px-3 py-2">
                                     <input name="search" value="{{ $search ?? '' }}"
                                            placeholder="Search departments..."
