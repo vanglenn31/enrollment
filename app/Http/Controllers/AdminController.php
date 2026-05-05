@@ -453,87 +453,63 @@ class AdminController extends Controller
         'course_id' => 'required|exists:courses,id',
     ]);
 
-    $scheduleMap = [
-        'MWF' => ['MON', 'WED', 'FRI'],
-        'TTH' => ['TUE', 'THU', 'SAT'],
-        'DAILY' => ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
-    ];
-
-    // ✅ FETCH COURSE FIRST (IMPORTANT)
     $course = Course::findOrFail($validated['course_id']);
 
-    // (optional future use)
-    $courseDays = $scheduleMap[$course->schedule_type] ?? [];
+    // Bug 1 fix: guard against no active term
+    $currentTerm = Term::where('status', 'active')->first();
+    if (!$currentTerm) {
+        return back()->withErrors(['course_id' => 'No active term found. Please set an active term first.']);
+    }
 
-    // Program restriction
+    if (!$currentTerm->is_enrollment_open) {
+    return back()->withErrors(['course_id' => 'Enrollment is currently closed for this term.']);
+}
+
+    // Bug 2 fix: cast to int for safe comparison
     $generalProgram = Program::firstWhere('code', 'GEN');
-    $allowedProgramIds = array_filter([$student->program, $generalProgram?->id]);
+    $allowedProgramIds = array_filter([
+        (int) $student->program,
+        $generalProgram ? (int) $generalProgram->id : null,
+    ]);
 
-    if (!in_array($course->program_id, $allowedProgramIds, true)) {
+    if (!in_array((int) $course->program_id, $allowedProgramIds, true)) {
         return back()->withErrors([
             'course_id' => 'This course does not belong to the student\'s program or general education.'
         ]);
     }
 
-    // Active term
-    $currentTerm = Term::firstOrCreate(
-        ['status' => 'active'],
-        [
-            'school_year' => date('Y') . '-' . (date('Y') + 1),
-            'semester' => 'First',
-        ]
-    );
-
-    // Duplicate course check (same course name)
+    // Bug 4 fix: check by course_id directly
     $alreadyEnrolled = $student->studentEnrollments()
         ->where('term_id', $currentTerm->id)
-        ->whereHas('course', function ($q) use ($course) {
-            $q->where('course_name', $course->course_name);
-        })
+        ->where('course_id', $course->id)
         ->exists();
 
     if ($alreadyEnrolled) {
-        return back()->withErrors([
-            'course_id' => 'Already enrolled in this course for this term.'
-        ]);
+        return back()->withErrors(['course_id' => 'Already enrolled in this course for this term.']);
     }
 
-    // Schedule conflict check
+    // Bug 3 fix: correct overlap logic
     $hasTimeConflict = $student->studentEnrollments()
         ->where('term_id', $currentTerm->id)
         ->whereHas('course', function ($q) use ($course) {
-
             $q->where('schedule_type', $course->schedule_type)
-              ->where(function ($timeQuery) use ($course) {
-
-                  $timeQuery->whereBetween('start_time', [$course->start_time, $course->end_time])
-                            ->orWhereBetween('end_time', [$course->start_time, $course->end_time])
-                            ->orWhere(function ($q2) use ($course) {
-                                $q2->where('start_time', '<=', $course->start_time)
-                                   ->where('end_time', '>=', $course->end_time);
-                            });
-
-              });
-
+              ->where('start_time', '<', $course->end_time)
+              ->where('end_time', '>', $course->start_time);
         })
         ->exists();
 
     if ($hasTimeConflict) {
-        return back()->withErrors([
-            'course_id' => 'Schedule conflict detected with another enrolled course.'
-        ]);
+        return back()->withErrors(['course_id' => 'Schedule conflict detected with another enrolled course.']);
     }
 
-    // Create enrollment
     $student->studentEnrollments()->create([
-        'course_id' => $course->id,
+        'course_id'       => $course->id,
         'enrollment_date' => now(),
-        'term_id' => $currentTerm->id,
-        'status' => 'enrolled',
-        'units' => $course->units,
+        'term_id'         => $currentTerm->id,
+        'status'          => 'enrolled',
+        'units'           => $course->units,
     ]);
 
-    // Update student status
     if ($student->status !== 'enrolled') {
         $student->update(['status' => 'enrolled']);
     }
@@ -867,75 +843,89 @@ class AdminController extends Controller
     }
 
     protected function storePersonnel(Request $request, string $roleName)
-    {
-        $role = Roles::firstOrCreate([
-            'role' => $roleName,
+{
+    $role = Roles::firstOrCreate([
+        'role' => $roleName,
+    ]);
+
+    $table = match ($roleName) {
+        'professor' => 'professors',
+        'registrar' => 'registrars',
+    };
+
+    $numberColumn = $roleName . '_number';
+
+    $rules = [
+        'first_name' => ['required', 'string', 'max:100'],
+        'middle_name' => ['nullable', 'string', 'max:100'],
+        'last_name' => ['required', 'string', 'max:100'],
+        'suffix' => ['nullable', 'string', 'max:10'],
+        'sex' => ['required', 'string', 'max:20'],
+        'birthdate' => ['required', 'date'],
+        'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+        'phone_number' => ['required', 'string', 'max:20'],
+        'password' => ['required', 'confirmed', Password::defaults()],
+        // ❌ REMOVED personnel_number
+    ];
+
+    if ($roleName === 'professor') {
+        $rules['department_id'] = ['required', 'exists:departments,id'];
+        $rules['specialization'] = ['nullable', 'string', 'max:255'];
+    }
+
+    $validated = $request->validate($rules);
+
+    DB::transaction(function () use ($validated, $role, $roleName, $numberColumn) {
+
+        // CREATE USER
+        $user = User::create([
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role_id' => optional($role)->id,
         ]);
 
-        $table = match ($roleName) {
-            'professor' => 'professors',
-            'registrar' => 'registrars',
-        };
-
-        $numberColumn = $roleName . '_number';
-
-        $rules = [
-            'first_name' => ['required', 'string', 'max:100'],
-            'middle_name' => ['nullable', 'string', 'max:100'],
-            'last_name' => ['required', 'string', 'max:100'],
-            'suffix' => ['nullable', 'string', 'max:10'],
-            'sex' => ['required', 'string', 'max:20'],
-            'birthdate' => ['required', 'date'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'phone_number' => ['required', 'string', 'max:20'],
-            'password' => ['required', 'confirmed', Password::defaults()],
-            'personnel_number' => ['required', 'string', 'max:100', "unique:{$table},{$numberColumn}"],
-        ];
+        // CREATE PROFILE
+        $profile = $user->profile()->create([
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'],
+            'last_name' => $validated['last_name'],
+            'suffix' => $validated['suffix'],
+            'sex' => $validated['sex'],
+            'birthdate' => $validated['birthdate'],
+            'phone_number' => $validated['phone_number'],
+        ]);
 
         if ($roleName === 'professor') {
-            $rules['department_id'] = ['required', 'exists:departments,id'];
-            $rules['specialization'] = ['nullable', 'string', 'max:255'];
+
+            // ✅ CREATE PROFESSOR FIRST
+            $professor = $profile->professor()->create([
+                'profile_id' => $profile->id,
+                'department_id' => $validated['department_id'],
+                'specialization' => $validated['specialization'] ?? null,
+                'status' => 'active',
+            ]);
+
+            // ✅ GENERATE P1, P2, P3...
+            $professor->professor_number = 'P' . $professor->id;
+            $professor->save();
+
+        } else {
+
+            // REGISTRAR (or other personnel)
+            $personnel = $user->{$roleName}()->create([
+                'user_id' => $user->id,
+            ]);
+
+            // Example: R1, R2, R3...
+            $personnel->{$numberColumn} = strtoupper(substr($roleName, 0, 1)) . $personnel->id;
+            $personnel->save();
         }
+    });
 
-        $validated = $request->validate($rules);
-
-        DB::transaction(function () use ($validated, $role, $roleName, $numberColumn) {
-            $user = User::create([
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
-                'role_id' => optional($role)->id,
-            ]);
-
-            $profile = $user->profile()->create([
-                'first_name' => $validated['first_name'],
-                'middle_name' => $validated['middle_name'],
-                'last_name' => $validated['last_name'],
-                'suffix' => $validated['suffix'],
-                'sex' => $validated['sex'],
-                'birthdate' => $validated['birthdate'],
-                'phone_number' => $validated['phone_number'],
-            ]);
-
-            if ($roleName === 'professor') {
-                $profileRelation = $profile->{$roleName}();
-                $profileRelation->create(array_merge([
-                    'profile_id' => $profile->id,
-                    $numberColumn => $validated['personnel_number'],
-                ], $roleName === 'professor' ? [
-                    'department_id' => $validated['department_id'],
-                    'specialization' => $validated['specialization'] ?? null,
-                ] : []));
-            } else {
-                $userRelation = $user->{$roleName}();
-                $userRelation->create([
-                    'user_id' => $user->id,
-                    $numberColumn => $validated['personnel_number'],
-                ]);
-            }
-        });
-
-        return redirect()->route('admin.' . $roleName . 's')->with('success', ucfirst($roleName) . ' created successfully.');
-    }
+    return redirect()
+        ->route('admin.' . $roleName . 's')
+        ->with('success', ucfirst($roleName) . ' created successfully.');
+}
 
     public function createPayment()
     {

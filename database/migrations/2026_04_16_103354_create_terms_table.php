@@ -13,8 +13,21 @@ return new class extends Migration
     {
         Schema::create('terms', function (Blueprint $table) {
             $table->id();
-             $table->string('school_year');
-            $table->string('semester');
+
+            // Basic term info
+            $table->string('school_year');           // e.g. 2025-2026
+            $table->enum('semester', ['1st', '2nd', 'summer']);
+
+            // Term duration
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
+
+            // Status: upcoming | active | ended
+            $table->enum('status', ['upcoming', 'active', 'ended'])->default('upcoming');
+
+            // Enrollment window toggle (can open/close enrollment independently of term status)
+            $table->boolean('is_enrollment_open')->default(false);
+
             $table->timestamps();
         });
     }

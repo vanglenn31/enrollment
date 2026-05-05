@@ -112,10 +112,6 @@
                                     <input type="date" name="birthdate" required class="mt-2 w-full rounded-2xl border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500" />
                                 </div>
 
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700">Personnel Number</label>
-                                    <input type="text" name="personnel_number" required value="{{ $personnelNumber }}" class="mt-2 w-full rounded-2xl border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500" />
-                                </div>
 
                                 @if($roleName === 'professor')
                                     <div class="md:col-span-2">

@@ -5,31 +5,25 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\RegistrarController;
 use App\Http\Controllers\ProfessorController;
+use App\Http\Controllers\TermController;
 use Illuminate\Support\Facades\Route;
 
-// Route::prefix('/')->group(function() {
-    Route::get('/', function () {
+Route::get('/', function () {
     return view('index');
-    })->name('index');
+})->name('index');
 
-    Route::get('/programs', function () {
+Route::get('/programs', function () {
     return view('landing.programs');
-    })->name('programs');
+})->name('programs');
 
-    Route::get('/admission', function () {
+Route::get('/admission', function () {
     return view('landing.admission');
-    })->name('admission');
+})->name('admission');
 
-    Route::get('/FAQ', function () {
+Route::get('/FAQ', function () {
     return view('landing.FAQ');
-    })->name('FAQ');
-// });
+})->name('FAQ');
 
-
-
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');\
 
 Route::prefix('student')
     ->name('student.')
@@ -89,10 +83,8 @@ Route::prefix('admin')
         Route::put('/students/{student}', [AdminController::class, 'updateStudent'])->name('students.update');
         Route::patch('/students/{student}/withdraw', [AdminController::class, 'withdrawStudent'])->name('students.withdraw');
         Route::patch('/students/{student}/reinstate', [AdminController::class, 'reinstateStudent'])->name('students.reinstate');
-        Route::get('/professors', [AdminController::class, 'professors'])->name('professors');
-        Route::get('/registrars', [AdminController::class, 'registrars'])->name('registrars');
-        Route::get('/payments', [AdminController::class, 'payments'])->name('payments');
 
+        Route::get('/professors', [AdminController::class, 'professors'])->name('professors');
         Route::get('/professors/create', [AdminController::class, 'createProfessor'])->name('professors.create');
         Route::post('/professors', [AdminController::class, 'storeProfessor'])->name('professors.store');
         Route::get('/professors/{professor}/edit', [AdminController::class, 'editProfessor'])->name('professors.edit');
@@ -100,6 +92,7 @@ Route::prefix('admin')
         Route::patch('/professors/{professor}/deactivate', [AdminController::class, 'deactivateProfessor'])->name('professors.deactivate');
         Route::patch('/professors/{professor}/activate', [AdminController::class, 'activateProfessor'])->name('professors.activate');
 
+        Route::get('/registrars', [AdminController::class, 'registrars'])->name('registrars');
         Route::get('/registrars/create', [AdminController::class, 'createRegistrar'])->name('registrars.create');
         Route::post('/registrars', [AdminController::class, 'storeRegistrar'])->name('registrars.store');
         Route::get('/registrars/{registrar}/edit', [AdminController::class, 'editRegistrar'])->name('registrars.edit');
@@ -107,16 +100,30 @@ Route::prefix('admin')
         Route::patch('/registrars/{registrar}/deactivate', [AdminController::class, 'deactivateRegistrar'])->name('registrars.deactivate');
         Route::patch('/registrars/{registrar}/activate', [AdminController::class, 'activateRegistrar'])->name('registrars.activate');
 
+        Route::get('/payments', [AdminController::class, 'payments'])->name('payments');
         Route::get('/payments/create', [AdminController::class, 'createPayment'])->name('payments.create');
         Route::post('/payments', [AdminController::class, 'storePayment'])->name('payments.store');
 
-                
         Route::get('/rooms', [AdminController::class, 'rooms'])->name('rooms');
         Route::get('/rooms/create', [AdminController::class, 'createRoom'])->name('rooms.create');
         Route::post('/rooms', [AdminController::class, 'storeRoom'])->name('rooms.store');
         Route::get('/rooms/{room}/edit', [AdminController::class, 'editRoom'])->name('rooms.edit');
         Route::put('/rooms/{room}', [AdminController::class, 'updateRoom'])->name('rooms.update');
         Route::delete('/rooms/{room}', [AdminController::class, 'destroyRoom'])->name('rooms.destroy');
+
+        // ── TERMS ────────────────────────────────────────────────────────────
+        Route::prefix('terms')->name('terms.')->group(function () {
+            Route::get('/',                           [TermController::class, 'index'])            ->name('index');
+            Route::get('/create',                     [TermController::class, 'create'])           ->name('create');
+            Route::post('/',                          [TermController::class, 'store'])            ->name('store');
+            Route::get('/{term}/edit',                [TermController::class, 'edit'])             ->name('edit');
+            Route::put('/{term}',                     [TermController::class, 'update'])           ->name('update');
+            Route::patch('/{term}/activate',          [TermController::class, 'activate'])         ->name('activate');
+            Route::patch('/{term}/end',               [TermController::class, 'end'])              ->name('end');
+            Route::patch('/{term}/toggle-enrollment', [TermController::class, 'toggleEnrollment']) ->name('toggleEnrollment');
+            Route::delete('/{term}',                  [TermController::class, 'destroy'])          ->name('destroy');
+        });
+        // ─────────────────────────────────────────────────────────────────────
 
     });
 
@@ -152,16 +159,12 @@ Route::middleware(['auth', 'active'])->group(function () {
 Route::get('/dashboard', function () {
     $user = auth()->user()->load('role');
     return match ($user->role->role) {
-        'student' => redirect()->route('student.dashboard'),
-        'admin' => redirect()->route('admin.dashboard'),
-        'registrar' => redirect()->route('registrar.dashboard'),
-        'professor' => redirect()->route('professor.dashboard'),
-        default => redirect()->route('dashboard'),
+        'student'  => redirect()->route('student.dashboard'),
+        'admin'    => redirect()->route('admin.dashboard'),
+        'registrar'=> redirect()->route('registrar.dashboard'),
+        'professor'=> redirect()->route('professor.dashboard'),
+        default    => redirect()->route('dashboard'),
     };
 })->middleware(['auth', 'active'])->name('dashboard');
-
-
-
-
 
 require __DIR__.'/auth.php';
