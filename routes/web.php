@@ -3,10 +3,13 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\StudentEnrollmentController;
 use App\Http\Controllers\RegistrarController;
 use App\Http\Controllers\ProfessorController;
+use App\Http\Controllers\RoomController;
 use App\Http\Controllers\TermController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,21 +49,31 @@ Route::prefix('admin')
     ->group(function () {
 
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        
+        Route::prefix('course')->name('course.')->group(function () {
+    Route::get('/', [CourseController::class, 'courses'])->name('course');
+    Route::get('/create', [CourseController::class, 'createCourse'])->name('create');
+    Route::post('/', [CourseController::class, 'storeCourse'])->name('store');
 
-        Route::get('/course', [AdminController::class, 'courses'])->name('course');
-        Route::get('/courses/create', [AdminController::class, 'createCourse'])->name('courses.create');
-        Route::post('/courses', [AdminController::class, 'storeCourse'])->name('courses.store');
-        Route::get('/course/{course}/edit', [AdminController::class, 'editCourse'])->name('courses.edit');
-        Route::put('/course/{course}', [AdminController::class, 'updateCourse'])->name('courses.update');
-        Route::patch('/courses/{course}/deactivate', [AdminController::class, 'deactivateCourse'])->name('courses.deactivate');
-        Route::patch('/courses/{course}/activate', [AdminController::class, 'activateCourse'])->name('courses.activate');
+    Route::get('/{course}', [CourseController::class, 'showCourse'])->name('show');       // ← BEFORE edit
+    Route::get('/{course}/edit', [CourseController::class, 'editCourse'])->name('edit');
+    Route::put('/{course}', [CourseController::class, 'updateCourse'])->name('update');
+    Route::patch('/{course}/deactivate', [CourseController::class, 'deactivateCourse'])->name('deactivate');
+    Route::patch('/{course}/activate', [CourseController::class, 'activateCourse'])->name('activate');
+});
 
-        Route::get('/enrollment', [AdminController::class, 'enrollment'])->name('enrollment');
-        Route::get('/enrollment/{student}/assign', [AdminController::class, 'assignCoursesForm'])->name('enrollment.assign');
-        Route::post('/enrollment/{student}/assign', [AdminController::class, 'storeEnrollment'])->name('enrollment.store');
-        Route::get('/enrollment/{studentEnrollment}/edit', [AdminController::class, 'editEnrollment'])->name('enrollment.edit');
-        Route::put('/enrollment/{studentEnrollment}', [AdminController::class, 'updateEnrollment'])->name('enrollment.update');
-        Route::delete('/enrollment/{studentEnrollment}', [AdminController::class, 'removeEnrollment'])->name('enrollment.remove');
+// ✅ OUTSIDE the course prefix — produces name: admin.enrolled-course.grade
+Route::patch('/enrolled-courses/{enrolledCourse}/grade', [CourseController::class, 'updateGrade'])->name('enrolled-course.grade');
+        
+        Route::prefix('enrollment')->name('enrollment.')->group(function () {
+            Route::get('/', [StudentEnrollmentController::class, 'enrollment'])->name('enroll');
+            Route::get('/{student}/assign', [StudentEnrollmentController::class, 'assignCoursesForm'])->name('assign');
+            Route::post('/{student}/assign', [StudentEnrollmentController::class, 'storeEnrollment'])->name('store');
+            Route::get('/{studentEnrollment}/edit', [StudentEnrollmentController::class, 'editEnrollment'])->name('edit');
+            Route::put('/{studentEnrollment}', [StudentEnrollmentController::class, 'updateEnrollment'])->name('update');
+            Route::delete('/{studentEnrollment}', [StudentEnrollmentController::class, 'removeEnrollment'])->name('remove');
+        });
+
         Route::get('/payment', [AdminController::class, 'payment'])->name('payment');
         
         Route::prefix('department')->name('department.')->group(function () {
@@ -112,12 +125,15 @@ Route::prefix('admin')
         Route::get('/payments/create', [AdminController::class, 'createPayment'])->name('payments.create');
         Route::post('/payments', [AdminController::class, 'storePayment'])->name('payments.store');
 
-        Route::get('/rooms', [AdminController::class, 'rooms'])->name('rooms');
-        Route::get('/rooms/create', [AdminController::class, 'createRoom'])->name('rooms.create');
-        Route::post('/rooms', [AdminController::class, 'storeRoom'])->name('rooms.store');
-        Route::get('/rooms/{room}/edit', [AdminController::class, 'editRoom'])->name('rooms.edit');
-        Route::put('/rooms/{room}', [AdminController::class, 'updateRoom'])->name('rooms.update');
-        Route::delete('/rooms/{room}', [AdminController::class, 'destroyRoom'])->name('rooms.destroy');
+        Route::prefix('rooms')->name('rooms.')->group(function () {
+            Route::get('/', [RoomController::class, 'rooms'])->name('index');
+            Route::get('/create', [RoomController::class, 'createRoom'])->name('create');
+            Route::post('/', [RoomController::class, 'storeRoom'])->name('store');
+            Route::get('/{room}/edit', [RoomController::class, 'editRoom'])->name('edit');
+            Route::put('/{room}', [RoomController::class, 'updateRoom'])->name('update');
+            Route::delete('/{room}', [RoomController::class, 'destroyRoom'])->name('destroy');
+        });
+        
 
         Route::prefix('terms')->name('terms.')->group(function () {
             Route::get('/', [TermController::class, 'index'])->name('index');

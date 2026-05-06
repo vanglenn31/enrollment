@@ -21,18 +21,11 @@
                     <!-- HEADER -->
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                         <div>
-                            <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">
-                                Edit Course
-                            </h1>
-                            <p class="text-sm text-gray-500 mt-1">
-                                Update course details
-                            </p>
+                            <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Add Course</h1>
+                            <p class="text-sm text-gray-500 mt-1">Create a course students can enroll in</p>
                         </div>
-
-                        <a href="{{ route('admin.course') }}"
-                           class="text-sm text-blue-600 hover:text-blue-800">
-                            Back
-                        </a>
+                        <a href="{{ route('admin.course.course') }}"
+                           class="text-sm text-blue-600 hover:text-blue-800">Back</a>
                     </div>
 
                     <!-- ERRORS -->
@@ -47,10 +40,8 @@
                     @endif
 
                     <!-- FORM -->
-                    <form action="{{ route('admin.courses.update', $course) }}" method="POST"
-                          class="space-y-5">
+                    <form action="{{ route('admin.course.store') }}" method="POST" class="space-y-5">
                         @csrf
-                        @method('PUT')
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -58,7 +49,7 @@
                             <div class="md:col-span-2">
                                 <label class="text-sm font-medium text-gray-700">Course Name</label>
                                 <input type="text" name="course_name" required
-                                       value="{{ old('course_name', $course->course_name) }}"
+                                       value="{{ old('course_name') }}"
                                        class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
@@ -66,7 +57,7 @@
                             <div>
                                 <label class="text-sm font-medium text-gray-700">Course Code</label>
                                 <input type="text" name="course_code" required
-                                       value="{{ old('course_code', $course->course_code) }}"
+                                       value="{{ old('course_code') }}"
                                        class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
@@ -74,7 +65,23 @@
                             <div>
                                 <label class="text-sm font-medium text-gray-700">Units</label>
                                 <input type="number" min="1" name="units" required
-                                       value="{{ old('units', $course->units) }}"
+                                       value="{{ old('units') }}"
+                                       class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+
+                            <!-- Slots -->
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Slots <span class="text-gray-400 font-normal">(max enrollment)</span></label>
+                                <input type="number" min="1" name="slots" required
+                                       value="{{ old('slots', 30) }}"
+                                       class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+
+                            <!-- Price -->
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Price</label>
+                                <input type="number" step="0.01" name="course_price"
+                                       value="{{ old('course_price') }}"
                                        class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
@@ -82,7 +89,7 @@
                             <div class="md:col-span-2">
                                 <label class="text-sm font-medium text-gray-700">Description</label>
                                 <textarea name="description" rows="3"
-                                          class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">{{ old('description', $course->description) }}</textarea>
+                                          class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">{{ old('description') }}</textarea>
                             </div>
 
                             <!-- Program -->
@@ -93,7 +100,7 @@
                                     <option value="">General Education</option>
                                     @foreach($programs as $program)
                                         <option value="{{ $program->id }}"
-                                            {{ old('program_id', $course->program_id) == $program->id ? 'selected' : '' }}>
+                                            {{ old('program_id') == $program->id ? 'selected' : '' }}>
                                             {{ $program->name }}
                                         </option>
                                     @endforeach
@@ -108,7 +115,7 @@
                                     <option value="">Unassigned</option>
                                     @foreach($professors as $professor)
                                         <option value="{{ $professor->id }}"
-                                            {{ old('professor_id', $course->professor_id) == $professor->id ? 'selected' : '' }}>
+                                            {{ old('professor_id') == $professor->id ? 'selected' : '' }}>
                                             {{ optional($professor->profile)->first_name }}
                                             {{ optional($professor->profile)->last_name }}
                                         </option>
@@ -124,7 +131,7 @@
                                     <option value="">No Room Assigned</option>
                                     @foreach($rooms as $room)
                                         <option value="{{ $room->id }}"
-                                            {{ old('room_id', $course->room_id) == $room->id ? 'selected' : '' }}>
+                                            {{ old('room_id') == $room->id ? 'selected' : '' }}>
                                             {{ $room->room_name }} — {{ $room->room_building }}
                                         </option>
                                     @endforeach
@@ -136,24 +143,10 @@
                                 <label class="text-sm font-medium text-gray-700">Schedule Type</label>
                                 <select name="schedule_type"
                                         class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-
                                     <option value="">Select Schedule</option>
-
-                                    <option value="MWF"
-                                        {{ old('schedule_type', $course->schedule_type) == 'MWF' ? 'selected' : '' }}>
-                                        MWF (Mon-Wed-Fri)
-                                    </option>
-
-                                    <option value="TTH"
-                                        {{ old('schedule_type', $course->schedule_type) == 'TTH' ? 'selected' : '' }}>
-                                        TTH (Tue-Thu-Sat)
-                                    </option>
-
-                                    <option value="DAILY"
-                                        {{ old('schedule_type', $course->schedule_type) == 'DAILY' ? 'selected' : '' }}>
-                                        Daily (Mon-Sat)
-                                    </option>
-
+                                    <option value="MWF" {{ old('schedule_type') == 'MWF' ? 'selected' : '' }}>MWF (Mon-Wed-Fri)</option>
+                                    <option value="TTH" {{ old('schedule_type') == 'TTH' ? 'selected' : '' }}>TTH (Tue-Thu-Sat)</option>
+                                    <option value="DAILY" {{ old('schedule_type') == 'DAILY' ? 'selected' : '' }}>Daily (Mon-Sat)</option>
                                 </select>
                             </div>
 
@@ -161,7 +154,7 @@
                             <div>
                                 <label class="text-sm font-medium text-gray-700">Start Time</label>
                                 <input type="time" name="start_time"
-                                       value="{{ old('start_time', $course->start_time) }}"
+                                       value="{{ old('start_time') }}"
                                        class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
@@ -169,15 +162,7 @@
                             <div>
                                 <label class="text-sm font-medium text-gray-700">End Time</label>
                                 <input type="time" name="end_time"
-                                       value="{{ old('end_time', $course->end_time) }}"
-                                       class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                            </div>
-
-                            <!-- Price -->
-                            <div>
-                                <label class="text-sm font-medium text-gray-700">Price</label>
-                                <input type="number" step="0.01" name="course_price"
-                                       value="{{ old('course_price', $course->course_price) }}"
+                                       value="{{ old('end_time') }}"
                                        class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
@@ -187,7 +172,7 @@
                         <div class="flex justify-end pt-4">
                             <button type="submit"
                                     class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm">
-                                Update Course
+                                Save Course
                             </button>
                         </div>
 

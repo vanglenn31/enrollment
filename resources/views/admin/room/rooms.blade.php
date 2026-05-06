@@ -41,7 +41,7 @@
                 @endif
 
                 <!-- SEARCH -->
-                <form method="GET" action="{{ route('admin.rooms') }}" class="mb-4">
+                <form method="GET" action="{{ route('admin.rooms.index') }}" class="mb-4">
                     <div class="relative w-full sm:max-w-sm">
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>

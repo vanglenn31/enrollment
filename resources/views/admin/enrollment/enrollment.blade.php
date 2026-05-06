@@ -31,7 +31,7 @@
                     </div>
 
                     <!-- SEARCH -->
-                    <form method="GET" action="{{ route('admin.enrollment') }}" class="w-full sm:w-80">
+                    <form method="GET" action="{{ route('admin.enrollment.enroll') }}" class="w-full sm:w-80">
                         <div class="flex bg-white rounded-xl border px-3 py-2">
                             <input name="search" value="{{ $search ?? '' }}"
                                 class="bg-transparent w-full outline-none text-sm"

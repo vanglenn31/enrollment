@@ -21,11 +21,11 @@
                     <!-- PAGE HEADER -->
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                         <div>
-                            <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Edit Room</h1>
-                            <p class="text-sm text-gray-500 mt-1">Update room details</p>
+                            <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Add Room</h1>
+                            <p class="text-sm text-gray-500 mt-1">Register a new classroom or lab</p>
                         </div>
 
-                        <a href="{{ route('admin.rooms') }}"
+                        <a href="{{ route('admin.rooms.index') }}"
                            class="text-sm text-blue-600 hover:text-blue-800">
                             Back
                         </a>
@@ -43,9 +43,8 @@
                     @endif
 
                     <!-- FORM -->
-                    <form action="{{ route('admin.rooms.update', $room) }}" method="POST" class="space-y-5">
+                    <form action="{{ route('admin.rooms.store') }}" method="POST" class="space-y-5">
                         @csrf
-                        @method('PUT')
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -53,7 +52,8 @@
                             <div>
                                 <label class="text-sm font-medium text-gray-700">Room Name</label>
                                 <input type="text" name="room_name" required
-                                       value="{{ old('room_name', $room->room_name) }}"
+                                       value="{{ old('room_name') }}"
+                                       placeholder="e.g. Room 101"
                                        class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
@@ -61,7 +61,8 @@
                             <div>
                                 <label class="text-sm font-medium text-gray-700">Building</label>
                                 <input type="text" name="room_building" required
-                                       value="{{ old('room_building', $room->room_building) }}"
+                                       value="{{ old('room_building') }}"
+                                       placeholder="e.g. Main Building"
                                        class="mt-1 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
@@ -71,7 +72,7 @@
                         <div class="flex justify-end pt-4">
                             <button type="submit"
                                     class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm transition">
-                                Update Room
+                                Save Room
                             </button>
                         </div>
 

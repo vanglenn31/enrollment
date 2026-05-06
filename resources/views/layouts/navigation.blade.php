@@ -155,15 +155,15 @@
 
         @if($role === 'admin')
             <x-responsive-nav-link :href="route('admin.dashboard')">Dashboard</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.course')">Courses</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.course.course')">Courses</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.department.department')">Department</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.programs.programs')">Programs</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.students')">Students</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.enrollment')">Enrollment</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.enrollment.enroll')">Enrollment</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.professors')">Professors</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.registrars')">Registrar</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.payments')">Payments</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.rooms')">Rooms</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.rooms.index')">Rooms</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.terms.index')">Terms</x-responsive-nav-link>
         @endif
 

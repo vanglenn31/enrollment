@@ -17,10 +17,10 @@ class Course extends Model
         'description',
         'units',
         'course_price',
-        'time',
         'status',
         'room_id',
         'day',
+        'slots',
         'start_time',
         'end_time',
     ];
@@ -40,7 +40,11 @@ class Course extends Model
         return $this->hasMany(StudentEnrollment::class);
     }
     public function room()
-{
-    return $this->belongsTo(Room::class);
-}
+    {
+        return $this->belongsTo(Room::class);
+    }
+    public function enrolledCourses()
+    {
+        return $this->hasMany(\App\Models\EnrolledCourse::class);
+    }
 }

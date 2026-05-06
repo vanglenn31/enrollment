@@ -108,7 +108,7 @@
                             </div>
                         </div>
 
-                        <a href="{{ route('admin.enrollment') }}"
+                        <a href="{{ route('admin.enrollment.enroll') }}"
                            class="shrink-0 inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 font-medium transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
@@ -290,8 +290,8 @@
         });
     };
 
-    /* ── Group courses ───────────────────────────── */
-    $grouped = $availableCourses->groupBy('course_name');
+    /* ── Group courses (paginated) ───────────────── */
+    $grouped = $groupPaginator->getCollection();
 @endphp
 
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -474,7 +474,74 @@
 
                             </div>
 
-                            <p class="text-xs text-gray-400 text-center">
+                            {{-- ── Pagination ── --}}
+                            @if($groupPaginator->hasPages())
+                                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-100">
+
+                                    {{-- Page info --}}
+                                    <p class="text-xs text-gray-400 order-2 sm:order-1">
+                                        Showing
+                                        <span class="font-semibold text-gray-600">{{ $groupPaginator->firstItem() }}</span>–<span class="font-semibold text-gray-600">{{ $groupPaginator->lastItem() }}</span>
+                                        of
+                                        <span class="font-semibold text-gray-600">{{ $groupPaginator->total() }}</span>
+                                        course{{ $groupPaginator->total() === 1 ? '' : 's' }}
+                                    </p>
+
+                                    {{-- Page buttons --}}
+                                    <div class="flex items-center gap-1 order-1 sm:order-2">
+
+                                        {{-- Previous --}}
+                                        @if($groupPaginator->onFirstPage())
+                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-100 text-gray-300 cursor-not-allowed">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                                                </svg>
+                                            </span>
+                                        @else
+                                            <a href="{{ $groupPaginator->previousPageUrl() }}"
+                                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 text-gray-500 hover:border-indigo-300 hover:text-indigo-600 transition-colors">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                                                </svg>
+                                            </a>
+                                        @endif
+
+                                        {{-- Page numbers --}}
+                                        @foreach($groupPaginator->getUrlRange(1, $groupPaginator->lastPage()) as $page => $url)
+                                            @if($page == $groupPaginator->currentPage())
+                                                <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 text-white text-xs font-semibold">
+                                                    {{ $page }}
+                                                </span>
+                                            @else
+                                                <a href="{{ $url }}"
+                                                   class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 text-gray-500 text-xs font-medium hover:border-indigo-300 hover:text-indigo-600 transition-colors">
+                                                    {{ $page }}
+                                                </a>
+                                            @endif
+                                        @endforeach
+
+                                        {{-- Next --}}
+                                        @if($groupPaginator->hasMorePages())
+                                            <a href="{{ $groupPaginator->nextPageUrl() }}"
+                                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 text-gray-500 hover:border-indigo-300 hover:text-indigo-600 transition-colors">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                                </svg>
+                                            </a>
+                                        @else
+                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-100 text-gray-300 cursor-not-allowed">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                                </svg>
+                                            </span>
+                                        @endif
+
+                                    </div>
+
+                                </div>
+                            @endif
+
+                            <p class="text-xs text-gray-400 text-center mt-3">
                                 Click a course name to see available sections and assign.
                             </p>
 
