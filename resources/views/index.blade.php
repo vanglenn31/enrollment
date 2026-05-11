@@ -65,7 +65,7 @@
 
         <!-- Background image overlay -->
         <div class="absolute inset-0">
-            <img src="{{ Vite::asset('resources/images/index-hero-pic.jpg') }}"
+            <img src="{{ asset('images/index-hero-pic.jpg') }}">
                  alt="Campus"
                  class="w-full h-full object-cover opacity-20">
         </div>
