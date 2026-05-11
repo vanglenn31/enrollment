@@ -7,7 +7,7 @@
         <div class="flex-1 flex items-center gap-3">
             <!-- Logo mark -->
             <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
-                <img src="{{ Vite::asset('resources/images/logo.png') }}" alt="UIM logo" class="w-full h-full">
+                <img src="{{ asset('images/logo.png') }}" alt="UIM logo" class="w-full h-full">
             </div>
             <div>
                 <h1 class="text-gray-900 font-bold text-sm sm:text-base lg:text-lg leading-tight">
