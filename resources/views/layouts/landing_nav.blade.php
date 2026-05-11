@@ -124,7 +124,7 @@
         <!-- Brand -->
         <a href="{{ route('index') }}" class="flex items-center gap-3 shrink-0">
             <div class="relative">
-                <img src="{{ Vite::asset('resources/images/logo.png') }}" alt="UIM logo"
+                <img src="{{ asset('images/logo.png') }}" alt="UIM logo"
                      class="w-12 h-12 object-contain drop-shadow-sm">
             </div>
             <div class="hidden sm:block leading-tight">
