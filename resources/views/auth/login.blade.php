@@ -214,7 +214,7 @@
             <!-- Brand -->
             <div class="lf-brand">
                 <div class="lf-brand-logo">
-                    <img src="{{ Vite::asset('resources/images/logo.png') }}" alt="UIM logo">
+                    <img src="{{ asset('images/logo.png') }}" alt="UIM logo">
                 </div>
                 <div>
                     <p class="lf-brand-name">University of International Mindanao</p>

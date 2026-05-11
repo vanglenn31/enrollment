@@ -33,7 +33,7 @@
             <div class="mb-8">
                 <div class="flex items-center gap-3 mb-3">
                     <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg,#0d2b56,#1d6fba);">
-                        <img src="{{ Vite::asset('resources/images/logo.png') }}" alt="UIM" class="w-full h-full object-contain">
+                        <img src="{{ asset('images/logo.png') }}" alt="UIM" class="w-full h-full object-contain">
                     </div>
                     <div>
                         <p class="text-xs font-semibold text-blue-900 leading-tight">University of International Mindanao</p>

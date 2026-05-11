@@ -261,7 +261,7 @@
             <!-- Brand -->
             <div class="fp-brand">
                 <div class="fp-brand-logo">
-                    <img src="{{ Vite::asset('resources/images/logo.png') }}" alt="UIM logo">
+                    <img src="{{ asset('images/logo.png') }}" alt="UIM logo">
                 </div>
                 <div>
                     <p class="fp-brand-name">University of International Mindanao</p>

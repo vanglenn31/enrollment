@@ -291,7 +291,7 @@
             <!-- Brand -->
             <div class="rp-brand">
                 <div class="rp-brand-logo">
-                    <img src="{{ Vite::asset('resources/images/logo.png') }}" alt="UIM logo">
+                    <img src="{{ asset('images/logo.png') }}" alt="UIM logo">
                 </div>
                 <div>
                     <p class="rp-brand-name">University of International Mindanao</p>

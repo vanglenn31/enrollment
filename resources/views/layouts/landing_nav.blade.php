@@ -189,7 +189,7 @@
     <!-- Sidebar Header -->
     <div class="flex items-center justify-between px-5 py-5 border-b border-gray-100">
         <div class="flex items-center gap-2.5">
-            <img src="{{ Vite::asset('resources/images/logo.png') }}" alt="UIM logo" class="w-9 h-9 object-contain">
+            <img src="{{ asset('images/logo.png') }}" alt="UIM logo" class="w-9 h-9 object-contain">
             <div>
                 <p class="nav-brand-title text-base font-bold text-[#1a3d6e] leading-none">UIM OES</p>
                 <p class="text-[0.65rem] text-gray-400 leading-none mt-0.5">Univ. of International Mindanao</p>
