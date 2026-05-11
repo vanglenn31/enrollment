@@ -135,7 +135,8 @@ class RegisteredUserController extends Controller
     });
 
 } catch (\Throwable $e) {
-    dd($e->getMessage());
+    // Handle the exception, log it, or return an error response
+    dd('Error during registration: ' . $e->getMessage());
 }
 
         
