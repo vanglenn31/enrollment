@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EducationalBackground extends Model
 {
-    protected $table = 'educationbackground';
-    
+    protected $table = 'educationbackgrounds';
+
     protected $fillable =[
         'school',
         'grad_date',
