@@ -165,10 +165,15 @@
             <x-responsive-nav-link :href="route('admin.payments')">Payments</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.rooms.index')">Rooms</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.terms.index')">Terms</x-responsive-nav-link>
+        @elseif($role === 'student')
+            <x-responsive-nav-link :href="route('student.dashboard')">Dashboard</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('student.enrollment')">Enrollment</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('student.my-courses')">My Enrollments</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('student.payment')">Payments</x-responsive-nav-link>
         @endif
 
         <div class="border-t border-gray-100 pt-1 mt-1">
-            <x-responsive-nav-link :href="route('profile.edit')">Profile</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('profile.edit')">Account</x-responsive-nav-link>
 
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

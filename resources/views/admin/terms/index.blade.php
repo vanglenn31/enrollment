@@ -74,13 +74,13 @@
                                             ? 'bg-red-100 text-red-700 hover:bg-red-200'
                                             : 'bg-blue-600 text-white hover:bg-blue-700' }}
                                             px-4 py-2 rounded-lg text-sm font-medium transition">
-                                    {{ $activeTerm->is_enrollment_open ? '🔒 Close Enrollment' : '🔓 Open Enrollment' }}
+                                    {{ $activeTerm->is_enrollment_open ? ' Close Enrollment' : ' Open Enrollment' }}
                                 </button>
                             </form>
                         </div>
                     @else
                         <div class="bg-yellow-50 border border-yellow-200 rounded-2xl px-5 py-4 text-yellow-800 text-sm font-medium">
-                            ⚠️ No active term. Please activate a term so students can be enrolled.
+                             No active term. Please activate a term so students can be enrolled.
                         </div>
                     @endif
 

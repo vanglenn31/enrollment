@@ -128,6 +128,41 @@
                         {{ session('success') }}
                     </div>
                 @endif
+                @php
+                    $downpaymentCleared = $student->studentEnrollments()->whereHas('payments', function ($q) {$q->where('payment_type', 'downpayment')->where('payment_status', 'paid');})->exists();
+                @endphp
+ 
+@if (! $downpaymentCleared)
+    <div class="flex items-start gap-4 rounded-2xl border border-orange-200 bg-orange-50 p-5">
+        <div class="shrink-0 mt-0.5">
+            <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="flex-1">
+            <p class="text-sm font-semibold text-orange-800">Downpayment Required</p>
+            <p class="mt-1 text-xs text-orange-700">
+                This student has not yet paid their downpayment. Course assignment is locked until
+                the downpayment is confirmed.
+            </p>
+            <a href="{{ route('admin.payments.downpayment', ['student_number' => $student->student_number]) }}"
+               class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-orange-500 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-600 transition-colors">
+                Record Downpayment →
+            </a>
+        </div>
+    </div>
+@else
+    <div class="flex items-center gap-3 rounded-2xl border border-green-200 bg-green-50 px-5 py-3 text-sm text-green-700">
+        <svg class="w-4 h-4 shrink-0 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"/>
+        </svg>
+        Downpayment confirmed — course assignment is unlocked.
+    </div>
+@endif
 
                 <!-- ─────────────────────────────────────────── -->
                 <!-- SECTION 1 — ENROLLED COURSES                -->
@@ -359,7 +394,12 @@
                                             <div class="px-4 py-3 space-y-3">
 
                                                 @foreach($variants as $course)
-                                                    @php $conflict = $hasConflict($course); @endphp
+                                                    @php
+                                                        $conflict = $hasConflict($course);
+                                                        $enrolled = $course->student_enrollments_count ?? ($course->studentEnrollments->count() ?? 0);
+                                                        $slots    = $course->slots ?? 30;
+                                                        $left     = max(0, $slots - $enrolled);
+                                                    @endphp
 
                                                     <div class="rounded-xl border {{ $conflict ? 'border-red-100 bg-red-50' : 'border-gray-200 bg-white' }} p-3">
 
@@ -419,36 +459,42 @@
                                                             </div>
 
                                                             {{-- Assign button (disabled if conflict OR already assigned) --}}
-@if(!$conflict && !$hasDuplicate($course))
+                                                    @if($hasDuplicate($course))
 
-    <form action="{{ route('admin.enrollment.store', $student) }}" method="POST" class="shrink-0">
-        @csrf
-        <input type="hidden" name="course_id" value="{{ $course->id }}">
+                                                        <span class="shrink-0 inline-flex items-center gap-1 rounded-lg bg-yellow-100 border border-yellow-200 px-4 py-2 text-xs font-semibold text-yellow-600 cursor-not-allowed">
+                                                            Already Assigned
+                                                        </span>
 
-        <button type="submit"
-            class="btn-assign inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-xs font-semibold text-white transition-colors">
+                                                    @elseif($left <= 0)
 
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-            </svg>
+                                                        <span class="shrink-0 inline-flex items-center gap-1 rounded-lg bg-gray-100 border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-600 cursor-not-allowed">
+                                                            Full
+                                                        </span>
 
-            Assign
-        </button>
-    </form>
+                                                    @elseif(!$conflict)
 
-@elseif($hasDuplicate($course))
+                                                        <form action="{{ route('admin.enrollment.store', $student) }}" method="POST" class="shrink-0">
+                                                            @csrf
+                                                            <input type="hidden" name="course_id" value="{{ $course->id }}">
 
-    <span class="shrink-0 inline-flex items-center gap-1 rounded-lg bg-yellow-100 border border-yellow-200 px-4 py-2 text-xs font-semibold text-yellow-600 cursor-not-allowed">
-        Already Assigned
-    </span>
+                                                            <button type="submit"
+                                                                class="btn-assign inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-xs font-semibold text-white transition-colors">
 
-@else
+                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                                                                </svg>
 
-    <span class="shrink-0 inline-flex items-center gap-1 rounded-lg bg-red-100 border border-red-200 px-4 py-2 text-xs font-semibold text-red-400 cursor-not-allowed">
-        Conflict
-    </span>
+                                                                Assign
+                                                            </button>
+                                                        </form>
 
-@endif
+                                                    @else
+
+                                                        <span class="shrink-0 inline-flex items-center gap-1 rounded-lg bg-red-100 border border-red-200 px-4 py-2 text-xs font-semibold text-red-400 cursor-not-allowed">
+                                                            Conflict
+                                                        </span>
+
+                                                    @endif
 
                                                         </div>
 

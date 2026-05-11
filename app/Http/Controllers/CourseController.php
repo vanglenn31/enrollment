@@ -17,6 +17,7 @@ class CourseController extends Controller
         $search = $request->input('search');
 
         $courses = Course::with('program.department', 'professor.profile')
+            ->withCount(['studentEnrollments', 'enrolledCourses'])
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('course_name', 'like', "%{$search}%")
@@ -41,35 +42,30 @@ class CourseController extends Controller
      * Show enrolled students for a course + allow grading.
      */
     public function showCourse(Course $course)
-    {
-        $course->load([
-            'program',
-            'professor.profile',
-            'room',
-            'enrolledCourses.studentEnrollment.student.profile',
-        ]);
+{
+    $course->load([
+        'enrolledCourses.studentEnrollment.student.profile',
+        'enrolledCourses.professor.profile',
+        'enrolledCourses.room',
+        'program',
+    ]);
 
-        $enrolledCount = $course->enrolledCourses->count();
-        $availableSlots = max(0, $course->slots - $enrolledCount);
+    $enrolledCount   = $course->enrolledCourses->count();
+    $availableSlots  = max(0, ($course->slots ?? 0) - $enrolledCount);
 
-        return view('admin.course.course-detail', compact('course', 'enrolledCount', 'availableSlots'));
-    }
+    return view('admin.course.course-detail', compact('course', 'enrolledCount', 'availableSlots'));
+}
 
-    /**
-     * Update grade for a specific enrolled course record.
-     */
-    public function updateGrade(Request $request, EnrolledCourse $enrolledCourse)
-    {
-        $validated = $request->validate([
-            'grade' => 'nullable|numeric|min:0|max:100',
-        ]);
+public function updateGrade(EnrolledCourse $enrolledCourse, Request $request)
+{
+    $request->validate([
+        'grade' => ['required', 'numeric', 'min:0', 'max:100'],
+    ]);
 
-        $enrolledCourse->update([
-            'grade' => $validated['grade'],
-        ]);
+    $enrolledCourse->update(['grade' => $request->grade]);
 
-        return back()->with('success', 'Grade updated successfully.');
-    }
+    return back()->with('success', 'Grade updated successfully.');
+}
 
     public function createCourse()
     {

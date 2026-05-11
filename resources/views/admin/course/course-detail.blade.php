@@ -132,7 +132,7 @@
                                                 </td>
 
                                                 <td class="py-3 px-4 text-gray-500">
-                                                    {{ $studentModel->student_id ?? '—' }}
+                                                    {{ $studentModel->student_number ?? '—' }}
                                                 </td>
 
                                                 <td class="py-3 px-4">

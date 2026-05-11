@@ -51,4 +51,8 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $query->where('is_active', true);
     }
+    public function studentProfile()
+    {
+        return $this->hasOne(Student::class);
+    }
 }

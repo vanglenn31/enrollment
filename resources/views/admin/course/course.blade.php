@@ -111,13 +111,14 @@
                                             <!-- SLOTS WITH FILL INDICATOR -->
                                             <td class="py-3 px-4">
                                                 @php
-                                                    $enrolled = $course->enrolledCourses_count ?? $course->enrolledCourses->count();
+                                                    $enrolled = $course->student_enrollments_count ?? $course->studentEnrollments->count();
                                                     $slots    = $course->slots ?? 30;
+                                                    $left     = max(0, $slots - $enrolled);
                                                     $pct      = $slots > 0 ? min(100, round(($enrolled / $slots) * 100)) : 0;
                                                 @endphp
                                                 <div class="flex items-center gap-2">
                                                     <span class="text-xs text-gray-600 whitespace-nowrap">
-                                                        {{ $enrolled }}/{{ $slots }}
+                                                        {{ $enrolled }}/{{ $slots }} · {{ $left }} left
                                                     </span>
                                                     <div class="w-16 bg-gray-200 rounded-full h-1.5">
                                                         <div class="h-1.5 rounded-full
@@ -157,7 +158,7 @@
                                                     </form>
                                                 @else
                                                     <form method="POST"
-                                                          action="{{ route('admin.courses.activate', $course) }}">
+                                                          action="{{ route('admin.course.activate', $course) }}">
                                                         @csrf
                                                         @method('PATCH')
                                                         <button type="submit"
@@ -207,10 +208,15 @@
                                         Room: {{ optional($course->room)->room_name ?? 'Not Assigned' }}
                                     </p>
 
-                                    <div class="mt-2 text-sm space-y-0.5">
+                                        @php
+                                            $enrolled = $course->student_enrollments_count ?? $course->studentEnrollments->count();
+                                            $slots    = $course->slots ?? 30;
+                                            $left     = max(0, $slots - $enrolled);
+                                        @endphp
+                                        <div class="mt-2 text-sm space-y-0.5">
                                         <p><strong>Program:</strong> {{ optional($course->program)->code ?? optional($course->program)->name ?? 'Gen Ed' }}</p>
                                         <p><strong>Units:</strong> {{ $course->units }}</p>
-                                        <p><strong>Slots:</strong> {{ $course->slots ?? 30 }}</p>
+                                        <p><strong>Slots:</strong> {{ $slots }} · {{ $left }} left</p>
                                     </div>
 
                                     <div class="flex gap-3 mt-3">

@@ -1,13 +1,71 @@
 ﻿<x-app-layout>
-    <div class="grid grid-cols-5 2xl:grid-cols-6 gap-x-0 gap-y-0">
-        <div class="col-span-1 fixed h-screen z-0">
-            @include('layouts.student_side_bar')
-        </div>
-        <div class="col-span-5 col-start-2">
-            @include('layouts.navigation')
-        </div>
 
-        <div class="col-span-4 col-start-2 p-6 z-30 w-full">
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+    .page-wrap * {
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .mono {
+        font-family: 'DM Mono', monospace;
+    }
+
+    .section-divider {
+        height: 2px;
+        background: linear-gradient(90deg, #4f46e5 0%, #818cf8 60%, transparent 100%);
+        border-radius: 2px;
+    }
+
+    .card-hover {
+        transition: all 0.2s ease;
+    }
+
+    .card-hover:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 9999px;
+        background: #22c55e;
+        display: inline-block;
+        box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
+    }
+
+    .empty-state {
+        background: repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 6px,
+            rgba(0,0,0,0.015) 6px,
+            rgba(0,0,0,0.015) 12px
+        );
+    }
+</style>
+
+<div class="page-wrap flex min-h-screen bg-gray-50">
+
+    <!-- SIDEBAR -->
+    <aside class="hidden lg:block fixed inset-y-0 left-0 w-64 z-30 w-full">
+        @include('layouts.student_side_bar')
+    </aside>
+
+    <!-- MAIN -->
+    <div class="flex-1 w-full lg:ml-64 flex flex-col">
+
+        <!-- NAVIGATION -->
+        <header class="sticky top-0 z-50">
+            @include('layouts.navigation')
+        </header>
+
+        <!-- CONTENT -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-8">
+            <div class="max-w-6xl mx-auto space-y-6">
+
+                <div class="col-span-4 col-start-2 p-6 z-30 w-full">
             <div class="max-w-6xl mx-auto space-y-6">
                 <div class="bg-white rounded-xl shadow p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -69,5 +127,11 @@
                 </div>
             </div>
         </div>
+
+            </div>
+        </main>
+
     </div>
+</div>
+
 </x-app-layout>

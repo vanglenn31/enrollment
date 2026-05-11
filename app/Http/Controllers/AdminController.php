@@ -82,6 +82,7 @@ class AdminController extends Controller
     public function professors(Request $request)
 {
     $search = $request->input('search');
+    $status = $request->input('status'); // 'active', 'inactive', or null (all)
 
     $professors = Professor::with(['profile', 'department'])
         ->when($search, function ($query, $search) {
@@ -91,11 +92,17 @@ class AdminController extends Controller
                       ->orWhere('last_name', 'like', "%{$search}%");
                 });
         })
+        ->when($status, function ($query, $status) {
+            $query->where('status', $status);
+        })
         ->latest()
         ->paginate(10)
         ->withQueryString();
 
-    return view('admin.professor', compact('professors', 'search'));
+    $totalActive   = Professor::where('status', 'active')->count();
+    $totalInactive = Professor::where('status', 'inactive')->count();
+
+    return view('admin.professor', compact('professors', 'search', 'status', 'totalActive', 'totalInactive'));
 }
 
     public function registrars(Request $request)
@@ -577,4 +584,3 @@ class AdminController extends Controller
 
     
 }
-

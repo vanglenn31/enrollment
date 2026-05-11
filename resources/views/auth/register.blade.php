@@ -4,11 +4,11 @@
 
     {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <style>
         body { font-family: 'DM Sans', sans-serif; }
-        h1, h2 { font-family: 'Lora', serif; }
+        h1, h2 { font-family: 'Playfair Display', serif; }
         .step { animation: stepFade .25s ease both; }
         @keyframes stepFade {
             from { opacity: 0; transform: translateY(6px); }
@@ -31,6 +31,15 @@
 
             {{-- Header --}}
             <div class="mb-8">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg,#0d2b56,#1d6fba);">
+                        <img src="{{ Vite::asset('resources/images/logo.png') }}" alt="UIM" class="w-full h-full object-contain">
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-blue-900 leading-tight">University of International Mindanao</p>
+                        <p class="text-[11px] text-slate-400">Enrollment Management System</p>
+                    </div>
+                </div>
                 <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
                     Enrollment Application
                 </h1>
@@ -38,8 +47,8 @@
             </div>
 
             {{-- Progress bar --}}
-            <div class="w-full h-1.5 bg-slate-200 rounded-full mb-8 overflow-hidden">
-                <div id="progressBar" class="h-full bg-indigo-600 rounded-full" style="width:20%"></div>
+            <div class="w-full h-1.5 rounded-full mb-8 overflow-hidden bg-slate-200">
+                <div id="progressBar" class="h-full rounded-full" style="width:20%; background: linear-gradient(90deg,#0d2b56,#1d6fba);"></div>
             </div>
 
             {{-- Step indicators --}}
@@ -69,19 +78,19 @@
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">First Name <span class="text-red-400">*</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="text" name="first_name" :value="old('first_name')" required autofocus autocomplete="given-name" />
                                 <x-input-error :messages="$errors->get('first_name')" class="mt-1 text-xs" />
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Middle Name <span class="normal-case font-normal text-slate-400">(opt.)</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="text" name="middle_name" :value="old('middle_name')" autocomplete="additional-name" />
                                 <x-input-error :messages="$errors->get('middle_name')" class="mt-1 text-xs" />
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Suffix <span class="normal-case font-normal text-slate-400">(opt.)</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="text" name="suffix" :value="old('suffix')" placeholder="Jr., Sr…" autocomplete="off" />
                                 <x-input-error :messages="$errors->get('suffix')" class="mt-1 text-xs" />
                             </div>
@@ -90,14 +99,14 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Last Name <span class="text-red-400">*</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="text" name="last_name" :value="old('last_name')" required autocomplete="family-name" />
                                 <x-input-error :messages="$errors->get('last_name')" class="mt-1 text-xs" />
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Sex <span class="text-red-400">*</span></label>
                                 <select name="sex" required
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-8 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-8 focus:border-blue-700 focus:ring-2 focus:ring-blue-700 focus:bg-white transition">
                                     <option value="" disabled {{ old('sex')?'':'selected' }}>Select…</option>
                                     <option value="Male"   {{ old('sex')=='Male'   ?'selected':'' }}>Male</option>
                                     <option value="Female" {{ old('sex')=='Female' ?'selected':'' }}>Female</option>
@@ -108,7 +117,7 @@
 
                         <div class="mb-4">
                             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Date of Birth <span class="text-red-400">*</span></label>
-                            <x-text-input class="block w-full sm:w-52 rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                            <x-text-input class="block w-full sm:w-52 rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                 type="date" name="birthdate" :value="old('birthdate')" required autocomplete="bday" />
                             <x-input-error :messages="$errors->get('birthdate')" class="mt-1 text-xs" />
                         </div>
@@ -121,13 +130,13 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Email <span class="text-red-400">*</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="email" name="email" :value="old('email')" required autocomplete="email" />
                                 <x-input-error :messages="$errors->get('email')" class="mt-1 text-xs" />
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Phone Number <span class="text-red-400">*</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="tel" name="phone_number" :value="old('phone_number')" required autocomplete="tel" placeholder="09XXXXXXXXX" />
                                 <x-input-error :messages="$errors->get('phone_number')" class="mt-1 text-xs" />
                             </div>
@@ -135,7 +144,8 @@
 
                         <div class="flex justify-end mt-8">
                             <button type="button" onclick="nextStep()"
-                                class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm shadow-indigo-200 transition-all duration-150">
+                                class="inline-flex items-center gap-2 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm transition-all duration-150 active:scale-95 hover:opacity-90"
+                                style="background: linear-gradient(135deg,#1d6fba,#0d2b56);">
                                 Next
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </button>
@@ -148,7 +158,7 @@
 
                         <div class="mb-4">
                             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">High School <span class="text-red-400">*</span></label>
-                            <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                            <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                 type="text" name="high_school" :value="old('high_school')" required autocomplete="organization" />
                             <x-input-error :messages="$errors->get('high_school')" class="mt-1 text-xs" />
                         </div>
@@ -156,14 +166,14 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Year of Graduation <span class="text-red-400">*</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="date" name="HS_grad_date" :value="old('HS_grad_date')" required autocomplete="off" />
                                 <x-input-error :messages="$errors->get('HS_grad_date')" class="mt-1 text-xs" />
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Strand <span class="text-red-400">*</span></label>
                                 <select name="Strand"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-8 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-8 focus:border-blue-700 focus:ring-2 focus:ring-blue-700 focus:bg-white transition">
                                     <option value="" disabled {{ old('Strand')?'':'selected' }}>Select strand…</option>
                                     @foreach(['TVL','HUMSS','STEM','ABM','GAS','Arts & Design','Sports'] as $s)
                                         <option value="{{ $s }}" {{ old('Strand')==$s?'selected':'' }}>{{ $s }}</option>
@@ -181,7 +191,7 @@
 
                         <div class="mb-4">
                             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">College <span class="font-normal normal-case text-slate-400">(optional)</span></label>
-                            <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                            <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                 type="text" name="college" :value="old('college')" autocomplete="organization" />
                             <x-input-error :messages="$errors->get('college')" class="mt-1 text-xs" />
                         </div>
@@ -189,13 +199,13 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Graduation Date <span class="font-normal normal-case text-slate-400">(optional)</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="date" name="col_grad_date" :value="old('col_grad_date')" autocomplete="off" />
                                 <x-input-error :messages="$errors->get('col_grad_date')" class="mt-1 text-xs" />
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Previous Field of Study <span class="font-normal normal-case text-slate-400">(optional)</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="text" name="prev_field" :value="old('prev_field')" autocomplete="off" />
                                 <x-input-error :messages="$errors->get('prev_field')" class="mt-1 text-xs" />
                             </div>
@@ -205,7 +215,9 @@
                             <button type="button" onclick="prevStep()" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all duration-150 active:scale-95">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
                             </button>
-                            <button type="button" onclick="nextStep()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm shadow-indigo-200 transition-all duration-150">
+                            <button type="button" onclick="nextStep()"
+                                class="inline-flex items-center gap-2 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm transition-all duration-150 active:scale-95 hover:opacity-90"
+                                style="background: linear-gradient(135deg,#1d6fba,#0d2b56);">
                                 Next <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </button>
                         </div>
@@ -218,7 +230,7 @@
                         <div class="mb-4">
                             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Program <span class="text-red-400">*</span></label>
                             <select name="program" required
-                                class="block w-full rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-8 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                                class="block w-full rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-8 focus:border-blue-700 focus:ring-2 focus:ring-blue-700 focus:bg-white transition">
                                 <option value="" disabled {{ old('program')?'':'selected' }}>Select program…</option>
                                 <option value="BSIT" {{ old('program')=='BSIT'?'selected':'' }}>Bachelor of Science in Information Technology</option>
                                 <option value="BSCS" {{ old('program')=='BSCS'?'selected':'' }}>Bachelor of Science in Computer Science</option>
@@ -230,7 +242,7 @@
                         <div class="mb-4">
                             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Preferred Class Time <span class="text-red-400">*</span></label>
                             <select name="preferred_time" required
-                                class="block w-full sm:w-52 rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-8 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                                class="block w-full sm:w-52 rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-8 focus:border-blue-700 focus:ring-2 focus:ring-blue-700 focus:bg-white transition">
                                 <option value="" disabled {{ old('preferred_time')?'':'selected' }}>Select time…</option>
                                 <option value="morning"   {{ old('preferred_time')=='morning'  ?'selected':'' }}>Morning</option>
                                 <option value="afternoon" {{ old('preferred_time')=='afternoon'?'selected':'' }}>Afternoon</option>
@@ -243,7 +255,9 @@
                             <button type="button" onclick="prevStep()" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all duration-150 active:scale-95">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
                             </button>
-                            <button type="button" onclick="nextStep()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm shadow-indigo-200 transition-all duration-150">
+                            <button type="button" onclick="nextStep()"
+                                class="inline-flex items-center gap-2 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm transition-all duration-150 active:scale-95 hover:opacity-90"
+                                style="background: linear-gradient(135deg,#1d6fba,#0d2b56);">
                                 Next <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </button>
                         </div>
@@ -256,13 +270,13 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">House / Unit No. <span class="font-normal normal-case text-slate-400">(optional)</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="text" name="house_number" :value="old('house_number')" autocomplete="address-line1" />
                                 <x-input-error :messages="$errors->get('house_number')" class="mt-1 text-xs" />
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Street <span class="font-normal normal-case text-slate-400">(optional)</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="text" name="street" :value="old('street')" autocomplete="address-line2" />
                                 <x-input-error :messages="$errors->get('street')" class="mt-1 text-xs" />
                             </div>
@@ -270,7 +284,7 @@
 
                         <div class="mb-4">
                             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Barangay <span class="text-red-400">*</span></label>
-                            <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                            <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                 type="text" name="barangay" :value="old('barangay')" required autocomplete="address-level3" />
                             <x-input-error :messages="$errors->get('barangay')" class="mt-1 text-xs" />
                         </div>
@@ -278,13 +292,13 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">City / Municipality <span class="text-red-400">*</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="text" name="city" :value="old('city')" required autocomplete="address-level2" />
                                 <x-input-error :messages="$errors->get('city')" class="mt-1 text-xs" />
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Province <span class="text-red-400">*</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                     type="text" name="province" :value="old('province')" required autocomplete="address-level1" />
                                 <x-input-error :messages="$errors->get('province')" class="mt-1 text-xs" />
                             </div>
@@ -292,7 +306,7 @@
 
                         <div class="mb-4">
                             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Postal Code <span class="text-red-400">*</span></label>
-                            <x-text-input class="block w-28 rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
+                            <x-text-input class="block w-28 rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
                                 type="text" inputmode="numeric" name="postal_code" :value="old('postal_code')" required autocomplete="postal-code" maxlength="4" />
                             <x-input-error :messages="$errors->get('postal_code')" class="mt-1 text-xs" />
                         </div>
@@ -301,7 +315,9 @@
                             <button type="button" onclick="prevStep()" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all duration-150 active:scale-95">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
                             </button>
-                            <button type="button" onclick="nextStep()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm shadow-indigo-200 transition-all duration-150">
+                            <button type="button" onclick="nextStep()"
+                                class="inline-flex items-center gap-2 text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm transition-all duration-150 active:scale-95 hover:opacity-90"
+                                style="background: linear-gradient(135deg,#1d6fba,#0d2b56);">
                                 Next <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </button>
                         </div>
@@ -311,27 +327,64 @@
                     <div class="step hidden">
                         <h2 class="text-xl font-semibold text-slate-800 pb-4 mb-6 border-b border-slate-100">Create Your Account</h2>
 
+                        {{-- Password --}}
                         <div class="mb-4">
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Password <span class="text-red-400">*</span></label>
-                            <x-text-input id="password"
-                                class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
-                                type="password" name="password" required autocomplete="new-password" />
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                                Password <span class="text-red-400">*</span>
+                            </label>
+                            <div class="relative">
+                                <x-text-input id="password"
+                                    class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-10 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
+                                    type="password" name="password" required autocomplete="new-password" onkeyup="checkPasswords()" />
+                                <button type="button"
+                                    onclick="togglePassword('password', 'eyeOpen1', 'eyeClosed1')"
+                                    class="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-blue-700 transition duration-200 active:scale-90">
+                                    <svg id="eyeOpen1" class="w-5 h-5 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    <svg id="eyeClosed1" class="w-5 h-5 hidden transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.956 9.956 0 012.223-3.592M6.228 6.228A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.97 9.97 0 01-4.132 5.411M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 6L3 3"/>
+                                    </svg>
+                                </button>
+                            </div>
                             <x-input-error :messages="$errors->get('password')" class="mt-1 text-xs" />
                         </div>
 
+                        {{-- Confirm Password --}}
                         <div class="mb-4">
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Confirm Password <span class="text-red-400">*</span></label>
-                            <x-text-input id="password_confirmation"
-                                class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition"
-                                type="password" name="password_confirmation" required autocomplete="new-password" />
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                                Confirm Password <span class="text-red-400">*</span>
+                            </label>
+                            <div class="relative">
+                                <x-text-input id="password_confirmation"
+                                    class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-10 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
+                                    type="password" name="password_confirmation" required autocomplete="new-password" onkeyup="checkPasswords()" />
+                                <button type="button"
+                                    onclick="togglePassword('password_confirmation', 'eyeOpen2', 'eyeClosed2')"
+                                    class="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-blue-700 transition duration-200 active:scale-90">
+                                    <svg id="eyeOpen2" class="w-5 h-5 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    <svg id="eyeClosed2" class="w-5 h-5 hidden transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.956 9.956 0 012.223-3.592M6.228 6.228A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.97 9.97 0 01-4.132 5.411M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 6L3 3"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <p id="passwordMessage" class="mt-1 text-xs transition-all duration-300"></p>
                             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1 text-xs" />
                         </div>
 
                         <div class="flex justify-between mt-8">
-                            <button type="button" onclick="prevStep()" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all duration-150 active:scale-95">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back
+                            <button type="button" onclick="prevStep()"
+                                class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all duration-150 active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                                Back
                             </button>
-                            <button type="submit" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-7 py-2.5 rounded-lg shadow-md shadow-indigo-200 transition-all duration-150">
+                            <button type="submit" id="submitBtn" disabled
+                                class="inline-flex items-center gap-2 text-white text-sm font-semibold px-7 py-2.5 rounded-lg shadow-md transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+                                style="background: linear-gradient(135deg,#1d6fba,#0d2b56);">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                 Submit Application
                             </button>
@@ -343,7 +396,7 @@
 
             <p class="text-center text-sm text-slate-400 mt-5">
                 Already have an account?
-                <a href="{{ route('login') }}" class="text-indigo-600 font-semibold hover:underline">Sign in</a>
+                <a href="{{ route('login') }}" class="font-semibold hover:underline" style="color:#1d6fba;">Sign in</a>
             </p>
 
         </div>
@@ -375,15 +428,17 @@
                 if (idx < i) {
                     bubble.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
                     bubble.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>';
-                    if (label) { label.classList.remove('text-slate-400','text-indigo-600'); label.classList.add('text-emerald-500'); }
+                    if (label) { label.classList.remove('text-slate-400','text-blue-800'); label.classList.add('text-emerald-500'); }
                 } else if (idx === i) {
-                    bubble.classList.add('bg-indigo-600', 'border-indigo-600', 'text-white', 'ring-4', 'ring-indigo-100');
+                    bubble.style.background = 'linear-gradient(135deg,#1d6fba,#0d2b56)';
+                    bubble.style.borderColor = '#0d2b56';
+                    bubble.classList.add('text-white', 'ring-4', 'ring-blue-100');
                     bubble.textContent = idx + 1;
-                    if (label) { label.classList.remove('text-slate-400','text-emerald-500'); label.classList.add('text-indigo-600'); }
+                    if (label) { label.classList.remove('text-slate-400','text-emerald-500'); label.classList.add('text-blue-800'); }
                 } else {
                     bubble.classList.add('border-slate-200', 'bg-white', 'text-slate-400');
                     bubble.textContent = idx + 1;
-                    if (label) { label.classList.remove('text-indigo-600','text-emerald-500'); label.classList.add('text-slate-400'); }
+                    if (label) { label.classList.remove('text-blue-800','text-emerald-500'); label.classList.add('text-slate-400'); }
                 }
             });
 
@@ -421,6 +476,58 @@
         }
 
         showStep(0);
+
+        function togglePassword(inputId, eyeOpenId, eyeClosedId) {
+            const input = document.getElementById(inputId);
+            const eyeOpen = document.getElementById(eyeOpenId);
+            const eyeClosed = document.getElementById(eyeClosedId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeOpen.classList.add('hidden');
+                eyeClosed.classList.remove('hidden');
+                eyeClosed.classList.add('scale-110');
+                setTimeout(() => eyeClosed.classList.remove('scale-110'), 200);
+            } else {
+                input.type = 'password';
+                eyeClosed.classList.add('hidden');
+                eyeOpen.classList.remove('hidden');
+                eyeOpen.classList.add('scale-110');
+                setTimeout(() => eyeOpen.classList.remove('scale-110'), 200);
+            }
+        }
+
+        function checkPasswords() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('password_confirmation').value;
+            const message = document.getElementById('passwordMessage');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (password === '' || confirmPassword === '') {
+                message.textContent = '';
+                submitBtn.disabled = true;
+                return;
+            }
+            if (password.length < 8) {
+                message.textContent = '✕ Password must be at least 8 characters';
+                message.classList.remove('text-green-500');
+                message.classList.add('text-red-500');
+                submitBtn.disabled = true;
+                return;
+            }
+            if (password === confirmPassword) {
+                message.textContent = '✓ Passwords match';
+                message.classList.remove('text-red-500');
+                message.classList.add('text-green-500');
+                submitBtn.disabled = false;
+                submitBtn.classList.add('scale-105');
+                setTimeout(() => submitBtn.classList.remove('scale-105'), 200);
+            } else {
+                message.textContent = '✕ Passwords do not match';
+                message.classList.remove('text-green-500');
+                message.classList.add('text-red-500');
+                submitBtn.disabled = true;
+            }
+        }
     </script>
 
 </x-guest-layout>

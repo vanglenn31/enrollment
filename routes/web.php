@@ -11,16 +11,17 @@ use App\Http\Controllers\RegistrarController;
 use App\Http\Controllers\ProfessorController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\TermController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentRequestController;
+use App\Http\Controllers\LandingController;
+use App\Models\ProgramView;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('index');
 })->name('index');
 
-Route::get('/programs', function () {
-    return view('landing.programs');
-})->name('programs');
-
+Route::get('/programs', [LandingController::class, 'index'])->name('programs');
 Route::get('/admission', function () {
     return view('landing.admission');
 })->name('admission');
@@ -40,6 +41,12 @@ Route::prefix('student')
         Route::post('/course/enlist', [StudentController::class, 'enlistCourse'])->name('course.enlist');
         Route::get('/enrollment', [StudentController::class, 'enrollment'])->name('enrollment');
         Route::get('/payment', [StudentController::class, 'payment'])->name('payment');
+        Route::get('/payment/pay', [StudentController::class, 'payPage'])->name('payment.pay');
+        Route::get('/my-courses', [StudentController::class, 'myCourses'])->name('my-courses');
+        Route::post('/payments/request', [PaymentRequestController::class, 'store'])->name('payment.request');
+        Route::middleware(['auth'])->group(function () {
+        Route::post('/student/payments/request', [PaymentRequestController::class, 'store'])->name('student.payments.request');
+});
 
     });
 
@@ -51,18 +58,18 @@ Route::prefix('admin')
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         
         Route::prefix('course')->name('course.')->group(function () {
-    Route::get('/', [CourseController::class, 'courses'])->name('course');
-    Route::get('/create', [CourseController::class, 'createCourse'])->name('create');
-    Route::post('/', [CourseController::class, 'storeCourse'])->name('store');
+        Route::get('/', [CourseController::class, 'courses'])->name('course');
+        Route::get('/create', [CourseController::class, 'createCourse'])->name('create');
+        Route::post('/', [CourseController::class, 'storeCourse'])->name('store');
 
-    Route::get('/{course}', [CourseController::class, 'showCourse'])->name('show');       // ← BEFORE edit
-    Route::get('/{course}/edit', [CourseController::class, 'editCourse'])->name('edit');
-    Route::put('/{course}', [CourseController::class, 'updateCourse'])->name('update');
-    Route::patch('/{course}/deactivate', [CourseController::class, 'deactivateCourse'])->name('deactivate');
-    Route::patch('/{course}/activate', [CourseController::class, 'activateCourse'])->name('activate');
+        Route::get('/{course}', [CourseController::class, 'showCourse'])->name('show');       // ← BEFORE edit
+        Route::get('/{course}/edit', [CourseController::class, 'editCourse'])->name('edit');
+        Route::put('/{course}', [CourseController::class, 'updateCourse'])->name('update');
+        Route::patch('/{course}/deactivate', [CourseController::class, 'deactivateCourse'])->name('deactivate');
+        Route::patch('/{course}/activate', [CourseController::class, 'activateCourse'])->name('activate');
 });
 
-// ✅ OUTSIDE the course prefix — produces name: admin.enrolled-course.grade
+
 Route::patch('/enrolled-courses/{enrolledCourse}/grade', [CourseController::class, 'updateGrade'])->name('enrolled-course.grade');
         
         Route::prefix('enrollment')->name('enrollment.')->group(function () {
@@ -121,9 +128,26 @@ Route::patch('/enrolled-courses/{enrolledCourse}/grade', [CourseController::clas
         Route::patch('/registrars/{registrar}/deactivate', [AdminController::class, 'deactivateRegistrar'])->name('registrars.deactivate');
         Route::patch('/registrars/{registrar}/activate', [AdminController::class, 'activateRegistrar'])->name('registrars.activate');
 
-        Route::get('/payments', [AdminController::class, 'payments'])->name('payments');
-        Route::get('/payments/create', [AdminController::class, 'createPayment'])->name('payments.create');
-        Route::post('/payments', [AdminController::class, 'storePayment'])->name('payments.store');
+        
+ 
+Route::post('/payments/{payment}/confirm-downpayment',
+    [PaymentController::class, 'confirmDownpayment'])->name('payments.confirm-downpayment');
+        Route::get('/payments',              [PaymentController::class, 'index'])->name('payments');
+         Route::get('/payments/downpayment',[PaymentController::class, 'createDownpayment'])->name('payments.downpayment');
+        Route::post('/payments/downpayment',[PaymentController::class, 'storeDownpayment'])->name('payments.downpayment.store');
+        Route::post('/payments/{payment}/confirm-downpayment',[PaymentController::class, 'confirmDownpayment'])->name('payments.confirm-downpayment');
+        Route::get('/payments/create',       [PaymentController::class, 'create'])->name('payments.create');
+        Route::post('/payments',             [PaymentController::class, 'store'])->name('payments.store');
+        Route::get('/payments/{payment}/edit', [PaymentController::class, 'edit'])->name('payments.edit');
+        Route::put('/payments/{payment}',    [PaymentController::class, 'update'])->name('payments.update');
+        Route::prefix('payment-requests')->name('payment-requests.')->group(function () {
+        Route::get('/', [PaymentRequestController::class, 'index'])   ->name('index');
+        Route::get('/{paymentRequest}', [PaymentRequestController::class, 'show'])    ->name('show');
+        Route::post('/{paymentRequest}/approve', [PaymentRequestController::class, 'approve']) ->name('approve');
+        Route::post('/{paymentRequest}/reject', [PaymentRequestController::class, 'reject'])  ->name('reject');
+       
+});
+ 
 
         Route::prefix('rooms')->name('rooms.')->group(function () {
             Route::get('/', [RoomController::class, 'rooms'])->name('index');

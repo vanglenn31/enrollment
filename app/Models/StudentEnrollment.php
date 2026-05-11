@@ -21,16 +21,32 @@ class StudentEnrollment extends Model
     'enrollment_date' => 'datetime',
     ];
 
-    public function student(): BelongsTo {
-        return $this->belongsTo(Student::class);
-    }
+    public function student()
+{
+    return $this->belongsTo(Student::class, 'student_id');
+}
 
     public function course(): BelongsTo {
         return $this->belongsTo(Course::class);
+    }
+
+    public function term(): BelongsTo {
+        return $this->belongsTo(Term::class);
     }
 
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class, 'student_enrollment_id');
     }
+    // In StudentEnrollment.php, add this relationship:
+    public function enrolledCourse()
+    {
+        return $this->hasOne(\App\Models\EnrolledCourse::class, 'student_enrollment_id');
+    }
+        public function getTotalTuitionAttribute(): float
+    {
+        // replace with your actual tuition logic
+        return $this->course?->tuition_fee ?? 0;
+    }
+    
 }

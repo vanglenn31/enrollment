@@ -122,12 +122,29 @@ class TermController extends Controller
             return back()->withErrors(['term' => 'This term has already ended.']);
         }
 
+        // Collect enrollment IDs for this term BEFORE deleting anything
+        $enrollmentIds = \App\Models\StudentEnrollment::where('term_id', $term->id)->pluck('id');
+
+        // Collect affected student IDs so we can reset their status
+        $studentIds = \App\Models\StudentEnrollment::where('term_id', $term->id)->pluck('student_id');
+
+        // Delete EnrolledCourse rows first (child FK records)
+        \App\Models\EnrolledCourse::whereIn('student_enrollment_id', $enrollmentIds)->delete();
+
+        // Delete all StudentEnrollment rows for this term
+        \App\Models\StudentEnrollment::where('term_id', $term->id)->delete();
+
+        // Reset students back to 'verified' so admin can re-enroll them next term
+        \App\Models\Student::whereIn('id', $studentIds)
+            ->where('status', 'enrolled')
+            ->update(['status' => 'verified']);
+
         $term->update([
-            'status' => 'ended',
-            'is_enrollment_open' => false
+            'status'             => 'ended',
+            'is_enrollment_open' => false,
         ]);
 
-        return back()->with('success', "Term {$term->label} has been ended.");
+        return back()->with('success', "Term {$term->label} has been ended and all course enrollments have been dissolved.");
     }
 
     public function toggleEnrollment(Term $term)

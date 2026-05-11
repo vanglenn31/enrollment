@@ -53,8 +53,8 @@ class RegisteredUserController extends Controller
             'phone_number' => ['required', 'regex:/^(09|\+639)\d{9}$/'],
             'password' => ['required', 'confirmed', Password::defaults()],
             //address
-            'house_number' => ['required', 'string', 'max:20'],
-            'street' => ['required', 'string', 'max:100'],
+            'house_number' => ['nullable', 'string', 'max:20'],
+            'street' => ['nullable', 'string', 'max:100'],
             'barangay' => ['required', 'string', 'max:100'],
             'city' => ['required', 'string', 'max:100'],
             'province' => ['required', 'string', 'max:100'],
@@ -97,8 +97,8 @@ class RegisteredUserController extends Controller
        
 
          $address = $profile->address()->create([
-            'house_number' => $validated['house_number'],
-            'street' => $validated['street'],
+            'house_number' => $validated['house_number'] ?? null,
+            'street' => $validated['street'] ?? null,
             'barangay' => $validated['barangay'],
             'city' => $validated['city'],
             'province' => $validated['province'],
