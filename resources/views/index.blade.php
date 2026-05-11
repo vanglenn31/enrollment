@@ -59,7 +59,7 @@
         }
     </style>
 
-    <!-- ========= HERO ========= -->
+    <!-- HERO  -->
     <section class="relative overflow-hidden clip-diagonal"
              style="background: linear-gradient(135deg, #0d2b56 0%, #1a4f8a 50%, #1d6fba 100%); min-height: 92vh; display: flex; align-items: center;">
 
