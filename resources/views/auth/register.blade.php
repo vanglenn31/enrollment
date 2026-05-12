@@ -129,11 +129,39 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Email <span class="text-red-400">*</span></label>
-                                <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
-                                    type="email" name="email" :value="old('email')" required autocomplete="email" />
-                                <x-input-error :messages="$errors->get('email')" class="mt-1 text-xs" />
-                            </div>
+    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+        Email <span class="text-red-400">*</span>
+    </label>
+
+    <div class="relative">
+        <x-text-input
+            id="emailInput"
+            class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 pr-9 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
+            type="email"
+            name="email"
+            :value="old('email')"
+            required
+            autocomplete="email"
+            placeholder="yourname@umindanao.edu.ph"
+            oninput="validateEmail(this)"
+            onblur="validateEmail(this, true)"
+        />
+        {{-- status icon --}}
+        <span id="emailIcon" class="pointer-events-none absolute inset-y-0 right-3 flex items-center hidden">
+            {{-- filled by JS --}}
+        </span>
+    </div>
+
+    {{-- inline feedback (replaces the generic x-input-error for email) --}}
+    <p id="emailMsg" class="mt-1 text-xs transition-all duration-200
+        {{ $errors->has('email') ? 'text-red-500' : 'text-slate-400' }}">
+        @error('email')
+            {{ $message }}
+        @else
+            Use your @umindanao.edu.ph institutional email only.
+        @enderror
+    </p>
+</div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Phone Number <span class="text-red-400">*</span></label>
                                 <x-text-input class="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm px-3 py-2.5 focus:border-blue-700 focus:ring-blue-700 focus:bg-white transition"
@@ -453,9 +481,74 @@
             toastTimer = setTimeout(() => toast.classList.add('hide'), 3200);
         }
 
+        /* ── Email real-time validator ── */
+        const ALLOWED_DOMAIN = 'umindanao.edu.ph';
+        const emailInput  = document.getElementById('emailInput');
+        const emailMsg    = document.getElementById('emailMsg');
+        const emailIcon   = document.getElementById('emailIcon');
+
+        const ICON_OK  = `<svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>`;
+        const ICON_ERR = `<svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
+
+        function validateEmail(el, isBlur = false) {
+            const val = el.value.trim();
+
+            // reset classes
+            el.classList.remove('border-red-400', 'ring-2', 'ring-red-100',
+                                 'border-emerald-400', 'ring-emerald-100');
+            emailMsg.className = 'mt-1 text-xs transition-all duration-200';
+            emailIcon.classList.remove('hidden');
+
+            if (!val) {
+                // empty — only flag on blur
+                emailIcon.classList.add('hidden');
+                emailMsg.textContent = 'Use your @umindanao.edu.ph institutional email only.';
+                emailMsg.classList.add('text-slate-400');
+                el.dataset.emailValid = 'false';
+                return;
+            }
+
+            const parts  = val.split('@');
+            const domain = parts.length === 2 ? parts[1].toLowerCase() : '';
+
+            if (domain === ALLOWED_DOMAIN) {
+                // ✓ valid domain
+                el.classList.add('border-emerald-400', 'ring-2', 'ring-emerald-100');
+                emailIcon.innerHTML = ICON_OK;
+                emailMsg.classList.add('text-emerald-600');
+                emailMsg.textContent = '✓ Looks good — valid institutional email.';
+                el.dataset.emailValid = 'true';
+            } else if (domain && domain !== ALLOWED_DOMAIN) {
+                // wrong domain entered
+                const isGmail   = domain === 'gmail.com';
+                const isYahoo   = domain === 'yahoo.com';
+                const isOutlook = domain.includes('outlook') || domain.includes('hotmail');
+                let hint = `Only @${ALLOWED_DOMAIN} addresses are accepted.`;
+                if (isGmail)        hint = `Gmail is not allowed. Use your @${ALLOWED_DOMAIN} institutional email.`;
+                else if (isYahoo)   hint = `Yahoo Mail is not allowed. Use your @${ALLOWED_DOMAIN} institutional email.`;
+                else if (isOutlook) hint = `Outlook/Hotmail is not allowed. Use your @${ALLOWED_DOMAIN} institutional email.`;
+
+                el.classList.add('border-red-400', 'ring-2', 'ring-red-100');
+                emailIcon.innerHTML = ICON_ERR;
+                emailMsg.classList.add('text-red-500');
+                emailMsg.textContent = '✕ ' + hint;
+                el.dataset.emailValid = 'false';
+            } else {
+                // still typing (no @ yet)
+                emailIcon.classList.add('hidden');
+                emailMsg.classList.add('text-slate-400');
+                emailMsg.textContent = `Must end in @${ALLOWED_DOMAIN}`;
+                el.dataset.emailValid = 'false';
+            }
+        }
+
+        // Pre-validate if the field was repopulated by Laravel (old input / error)
+        if (emailInput && emailInput.value) validateEmail(emailInput);
+
         function validateStep() {
             const required = steps[currentStep].querySelectorAll('input[required], select[required]');
             let ok = true;
+
             required.forEach(el => {
                 el.classList.remove('border-red-400', 'ring-red-100');
                 if (!el.value.trim()) {
@@ -463,7 +556,21 @@
                     ok = false;
                 }
             });
-            if (!ok) showToast('Please fill in all required fields.');
+
+            // Extra email-domain check on Step 1
+            if (currentStep === 0 && emailInput) {
+                const emailOk = emailInput.dataset.emailValid === 'true';
+                if (!emailOk) {
+                    validateEmail(emailInput, true);   // force error state
+                    ok = false;
+                }
+            }
+
+            if (!ok) showToast(
+                currentStep === 0 && emailInput && emailInput.dataset.emailValid !== 'true'
+                    ? `Only @${ALLOWED_DOMAIN} emails are accepted.`
+                    : 'Please fill in all required fields.'
+            );
             return ok;
         }
 
