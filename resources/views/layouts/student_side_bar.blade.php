@@ -3,7 +3,7 @@
     <!-- SIDEBAR -->
     <aside
         :class="open ? 'translate-x-0' : '-translate-x-full'"
-        class=" fixed bg-white lg:static z-50 top-0 left-0 h-screen w-64 shadow-md transform lg:translate-x-0 transition-transform duration-200 border-r border-gray-200">
+        class=" fixed bg-white lg:static z-50 top-0 left-0 h-screen w-64 shadow-md transform lg:translate-x-0 transition-transform duration-200 border-r border-gray-200 ">
 
         <!-- Mobile close button -->
         <div class="top-3 flex items-center justify-end px-4 lg:hidden pt-3">

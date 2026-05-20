@@ -54,7 +54,7 @@
 <div class="enroll-wrap flex min-h-screen bg-gray-50">
 
     <!-- SIDEBAR -->
-    <aside class="hidden lg:block fixed inset-y-0 left-0 w-64 z-30 w-full">
+    <aside class="hidden lg:block fixed inset-y-0 left-0 z-0 ">
         @include('layouts.student_side_bar')
     </aside>
 
@@ -132,7 +132,22 @@
                 @endif
 
                 <!-- STATUS BANNER -->
-                @if (!$hasDownpayment)
+                @if($isFinalized)
+                    <div class="flex items-start gap-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
+                        <div class="shrink-0 mt-0.5">
+                            <svg class="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-indigo-800">Enrollment Finalized</p>
+                            <p class="mt-1 text-xs text-indigo-700">
+                                Your course selection has been submitted and locked. No further changes are allowed for this term.
+                            </p>
+                        </div>
+                    </div>
+
+                @elseif (!$hasDownpayment)
                     <div class="flex items-start gap-4 rounded-2xl border border-orange-200 bg-orange-50 p-5">
                         <div class="shrink-0 mt-0.5">
                             <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
@@ -267,17 +282,17 @@
                                         <div class="shrink-0">
                                             @php $status = $enrollment->status ?? 'enrolled'; @endphp
                                             <span class="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold
-                                                @if($status === 'enrolled')    bg-green-100  border border-green-200  text-green-700
+                                                @if(in_array($status, ['enrolled', 'finalized'])) bg-green-100  border border-green-200  text-green-700
                                                 @elseif($status === 'pending') bg-yellow-100 border border-yellow-200 text-yellow-700
                                                 @elseif($status === 'dropped') bg-red-100    border border-red-200    text-red-500
                                                 @else                          bg-gray-100   border border-gray-200   text-gray-600
                                                 @endif">
-                                                @if($status === 'enrolled')
+                                                @if(in_array($status, ['enrolled', 'finalized']))
                                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                                     </svg>
                                                 @endif
-                                                {{ ucfirst($status) }}
+                                                Enrolled
                                             </span>
                                         </div>
 
@@ -287,6 +302,31 @@
                             @endforeach
 
                         </div>
+
+                        {{-- ── FINALIZE / SUBMIT ENROLLMENT button ── --}}
+                        @if(!$isFinalized && $canSelfEnroll && $enrollments->isNotEmpty())
+                            <div class="px-5 sm:px-6 pb-5">
+                                <div class="rounded-xl border border-indigo-100 bg-indigo-50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                    <div>
+                                        <p class="text-sm font-semibold text-indigo-800">Ready to submit?</p>
+                                        <p class="text-xs text-indigo-600 mt-0.5">
+                                            Once finalized, your course selection is locked and cannot be changed for this term.
+                                        </p>
+                                    </div>
+                                    <form action="{{ route('student.enrollment.finalize') }}" method="POST" class="shrink-0"
+                                          onsubmit="return confirm('Are you sure you want to finalize your enrollment? This cannot be undone.')">
+                                        @csrf
+                                        <button type="submit"
+                                            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 active:scale-95 px-5 py-2.5 text-sm font-semibold text-white transition-all">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            Submit Enrollment
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endif
 
                     @endif
 
@@ -318,7 +358,7 @@
 
                     /* ── Already enlisted check ── */
                     $hasDuplicate = function ($course) use ($enrolledSlots) {
-                        return $enrolledSlots->contains(fn($slot) => $slot['name'] === $course->course_name);
+                        return $enrolledSlots->contains(fn($slot) => ($slot['name'] ?? null) === $course->course_name);
                     };
 
                     /* ── Group available courses by name ── */
@@ -344,13 +384,22 @@
                                 <p class="text-xs text-gray-400 mt-1">{{ $message }}</p>
                             </div>
 
-                        @elseif($availableCourses->isEmpty())
+                        @elseif($availableCourses->isEmpty() && $enrollments->isNotEmpty())
 
                             <div class="empty-state rounded-xl border border-dashed border-gray-200 p-8 text-center">
                                 <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                                 <p class="text-sm text-gray-400">All available courses have been enlisted.</p>
+                            </div>
+
+                        @elseif($availableCourses->isEmpty())
+
+                            <div class="empty-state rounded-xl border border-dashed border-gray-200 p-8 text-center">
+                                <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+                                </svg>
+                                <p class="text-sm text-gray-400">No courses are available for your program yet.</p>
                             </div>
 
                         @else
@@ -383,7 +432,7 @@
                                                     <span class="text-xs text-gray-400">{{ $variants->count() }} sections</span>
                                                 @endif
                                                 <svg id="{{ $groupId }}-chevron"
-                                                     class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                                                     data-chevron class="w-4 h-4 text-gray-400 transition-transform duration-200"
                                                      fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                                                 </svg>
@@ -392,7 +441,7 @@
                                         </button>
 
                                         {{-- Expanded panel --}}
-                                        <div id="{{ $groupId }}" class="hidden border-t border-gray-100 bg-gray-50">
+                                        <div id="{{ $groupId }}" data-panel class="hidden border-t border-gray-100 bg-gray-50">
 
                                             <div class="px-4 py-3 space-y-3">
 
@@ -400,7 +449,7 @@
                                                     @php
                                                         $conflict = $hasConflict($course);
                                                         $slots    = $course->slots ?? 30;
-                                                        $enrolled = $course->studentEnrollments()->count();
+                                                        $enrolled = $course->student_enrollments_count ?? $course->studentEnrollments()->count();
                                                         $left     = max(0, $slots - $enrolled);
                                                     @endphp
 
@@ -540,24 +589,26 @@
 
 <script>
     function toggleGroup(id) {
-        const panel   = document.getElementById(id);
-        const chevron = document.getElementById(id + '-chevron');
-        const isOpen  = !panel.classList.contains('hidden');
+                        const panel   = document.getElementById(id);
+                        const chevron = document.getElementById(id + '-chevron');
+                        const isOpen  = !panel.classList.contains('hidden');
 
-        // Close all
-        document.querySelectorAll('#course-accordion [id^="cg-"]').forEach(el => {
-            if (!el.id.endsWith('-chevron')) el.classList.add('hidden');
-        });
-        document.querySelectorAll('#course-accordion [id$="-chevron"]').forEach(el => {
-            el.style.transform = '';
-        });
+                        // Close all
+                        document.querySelectorAll('#course-accordion [id^="cg-"]').forEach(el => {
+                            if (!el.id.endsWith('-chevron')) {
+                                el.classList.add('hidden');
+                            }
+                        });
+                        document.querySelectorAll('#course-accordion [id$="-chevron"]').forEach(el => {
+                            el.style.transform = '';
+                        });
 
-        // Toggle clicked
-        if (!isOpen) {
-            panel.classList.remove('hidden');
-            chevron.style.transform = 'rotate(180deg)';
-        }
-    }
+                        // Open clicked (toggle)
+                        if (!isOpen) {
+                            panel.classList.remove('hidden');
+                            chevron.style.transform = 'rotate(180deg)';
+                        }
+                    }
 </script>
 
 </x-app-layout>

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class TermController extends Controller
 {
- 
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -47,7 +47,6 @@ class TermController extends Controller
             'school_year.regex' => 'School year must follow the format YYYY-YYYY (e.g. 2025-2026).',
         ]);
 
-        // Prevent duplicate semester within the same school year
         $exists = Term::where('school_year', $validated['school_year'])
             ->where('semester', $validated['semester'])
             ->exists();
@@ -65,7 +64,6 @@ class TermController extends Controller
             ->with('success', 'Term created successfully.');
     }
 
-
     public function edit(Term $term)
     {
         return view('admin.terms.edit', compact('term'));
@@ -82,7 +80,6 @@ class TermController extends Controller
             'school_year.regex' => 'School year must follow the format YYYY-YYYY (e.g. 2025-2026).',
         ]);
 
-        // Prevent duplicates (exclude current term)
         $exists = Term::where('school_year', $validated['school_year'])
             ->where('semester', $validated['semester'])
             ->where('id', '!=', $term->id)
@@ -101,8 +98,6 @@ class TermController extends Controller
             ->with('success', 'Term updated successfully.');
     }
 
-    
-
     public function activate(Term $term)
     {
         if ($term->status === 'ended') {
@@ -114,36 +109,46 @@ class TermController extends Controller
         return back()->with('success', "Term {$term->label} is now active.");
     }
 
-   
-
     public function end(Term $term)
     {
         if ($term->status === 'ended') {
             return back()->withErrors(['term' => 'This term has already ended.']);
         }
-
-        // Collect enrollment IDs for this term BEFORE deleting anything
+ 
+        $studentIds    = \App\Models\StudentEnrollment::where('term_id', $term->id)->pluck('student_id');
         $enrollmentIds = \App\Models\StudentEnrollment::where('term_id', $term->id)->pluck('id');
-
-        // Collect affected student IDs so we can reset their status
-        $studentIds = \App\Models\StudentEnrollment::where('term_id', $term->id)->pluck('student_id');
-
-        // Delete EnrolledCourse rows first (child FK records)
-        \App\Models\EnrolledCourse::whereIn('student_enrollment_id', $enrollmentIds)->delete();
-
-        // Delete all StudentEnrollment rows for this term
+ 
+        // ── 1. Stamp student_id on enrolled_courses BEFORE nulling the FK ────
+        // Bulk-update via a subquery join so every row gets the correct
+        // student_id regardless of whether it was previously set or not.
+        \Illuminate\Support\Facades\DB::table('enrolled_courses')
+            ->joinSub(
+                \App\Models\StudentEnrollment::whereIn('id', $enrollmentIds)
+                    ->select('id', 'student_id'),
+                'se',
+                'enrolled_courses.student_enrollment_id',
+                '=',
+                'se.id'
+            )
+            ->update(['enrolled_courses.student_id' => \Illuminate\Support\Facades\DB::raw('se.student_id')]);
+ 
+        // ── 2. Null the FK so cascade-delete won't wipe the rows ─────────────
+        \App\Models\EnrolledCourse::whereIn('student_enrollment_id', $enrollmentIds)
+            ->update(['student_enrollment_id' => null]);
+ 
+        // ── 3. Safe to delete the pivot rows now ──────────────────────────────
         \App\Models\StudentEnrollment::where('term_id', $term->id)->delete();
-
-        // Reset students back to 'verified' so admin can re-enroll them next term
+ 
+        // ── 4. Reset student status ───────────────────────────────────────────
         \App\Models\Student::whereIn('id', $studentIds)
             ->where('status', 'enrolled')
             ->update(['status' => 'verified']);
-
+ 
         $term->update([
             'status'             => 'ended',
             'is_enrollment_open' => false,
         ]);
-
+ 
         return back()->with('success', "Term {$term->label} has been ended and all course enrollments have been dissolved.");
     }
 
@@ -155,12 +160,12 @@ class TermController extends Controller
 
         $term->toggleEnrollment();
 
-        $state = $term->fresh()->is_enrollment_open ? 'opened' : 'closed';
+        $isNowOpen = $term->fresh()->is_enrollment_open;
+        $state     = $isNowOpen ? 'opened' : 'closed';
 
         return back()->with('success', "Enrollment has been {$state} for {$term->label}.");
     }
 
-  
     public function destroy(Term $term)
     {
         if ($term->status !== 'upcoming') {
@@ -173,5 +178,4 @@ class TermController extends Controller
             ->route('admin.terms.index')
             ->with('success', 'Term deleted successfully.');
     }
-    
 }

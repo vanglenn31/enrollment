@@ -2,274 +2,372 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StudentEnrollment;
-use App\Models\EnrolledCourse;
-use App\Models\Student;
-use App\Models\Course;
-use App\Models\Program;
-use App\Models\Term;
 use App\Models\Payment;
+use App\Models\Student;
+use App\Models\StudentEnrollment;
+use App\Models\Term;
 use Illuminate\Http\Request;
 
-class StudentEnrollmentController extends Controller
+class PaymentController extends Controller
 {
-    public function enrollment(Request $request)
-    {
-        $search = $request->input('search');
 
-        $verifiedStudents = Student::where('is_verified', true)
+    public function index(Request $request)
+    {
+        $search = $request->get('search');
+
+        $payments = Payment::with([
+                'studentEnrollment.student.profile',
+                'studentEnrollment.term',
+                'paymentRequests',
+            ])
             ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('student_number', 'like', "%{$search}%")
-                      ->orWhereHas('profile', function ($q) use ($search) {
-                          $q->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%");
-                      });
+                $query->whereHas('studentEnrollment.student.profile', function ($q) use ($search) {
+                    $q->where('first_name', 'like', "%{$search}%")
+                      ->orWhere('last_name',  'like', "%{$search}%");
+                })->orWhereHas('studentEnrollment.student', function ($q) use ($search) {
+                    $q->where('student_number', 'like', "%{$search}%");
                 });
             })
-            ->with(['profile', 'programRelation', 'studentEnrollments.course'])
-            ->orderByDesc('updated_at')
-            ->paginate(10)
-            ->withQueryString();
-
-        return view('admin.enrollment.enrollment', compact('verifiedStudents', 'search'));
-    }
-
-    public function assignCoursesForm(Request $request, Student $student)
-    {
-        $student->refresh();
-        $student->load(['profile', 'programRelation', 'studentEnrollments.course']);
-
-        // Check if student has a paid downpayment — pass to view so UI can warn admin
-        $hasDownpayment = Payment::whereHas('studentEnrollment', function ($q) use ($student) {
-                $q->where('student_id', $student->id);
-            })
-            ->where('payment_type', 'downpayment')
-            ->where('payment_status', 'paid')
-            ->exists();
-
-        $currentCourses    = $student->studentEnrollments()->whereNotNull('course_id')->pluck('course_id')->toArray();
-        $generalProgram    = Program::firstWhere('code', 'GEN');
-        $allowedProgramIds = array_filter([$student->program, $generalProgram?->id]);
-
-        $availableCourses = Course::whereIn('program_id', $allowedProgramIds)
-            ->whereNotIn('id', $currentCourses)
-            ->with('program')
+            ->latest()
             ->get();
 
-        // Paginate by course_name groups (5 per page)
-        $grouped     = $availableCourses->groupBy('course_name');
-        $perPage     = 5;
-        $currentPage = (int) $request->input('course_page', 1);
-        $totalGroups = $grouped->count();
-        $groupedPage = $grouped->slice(($currentPage - 1) * $perPage, $perPage);
+        return view('admin.payments.index', compact('payments', 'search'));
+    }
 
-        $groupPaginator = new \Illuminate\Pagination\LengthAwarePaginator(
-            $groupedPage,
-            $totalGroups,
-            $perPage,
-            $currentPage,
-            [
-                'path'     => $request->url(),
-                'query'    => array_merge($request->query(), ['course_page' => null]),
-                'pageName' => 'course_page',
-            ]
-        );
+    // ═══════════════════════════════════════════════════════════════
+    //  DOWNPAYMENT  — admin records a downpayment for a student
+    //  GET  /admin/payments/downpayment
+    //  POST /admin/payments/downpayment
+    // ═══════════════════════════════════════════════════════════════
 
-        return view('admin.enrollment.assign-courses', compact(
+    /**
+     * Show the downpayment form.
+     * Look up a student by student_number and show their downpayment status.
+     */
+    public function createDownpayment(Request $request)
+    {
+        $studentNumber       = $request->get('student_number');
+        $student             = null;
+        $enrollment          = null;
+        $existingDownpayment = null;
+
+        if ($studentNumber) {
+            $student = Student::with('profile')
+                ->where('student_number', $studentNumber)
+                ->first();
+
+            if ($student) {
+                // Latest pending/verified enrollment
+                $enrollment = StudentEnrollment::with(['payments', 'term'])
+                    ->where('student_id', $student->id)
+                    ->latest()
+                    ->first();
+
+                // Already has a confirmed downpayment?
+                if ($enrollment) {
+                    $existingDownpayment = $enrollment->payments()
+                        ->where('payment_type', 'downpayment')
+                        ->whereNotIn('payment_status', ['cancelled'])
+                        ->first();
+                }
+            }
+        }
+
+        return view('admin.payments.create-downpayment', compact(
+            'studentNumber',
             'student',
-            'currentCourses',
-            'availableCourses',
-            'groupPaginator',
-            'hasDownpayment',
+            'enrollment',
+            'existingDownpayment',
         ));
     }
 
-    public function storeEnrollment(Request $request, Student $student)
+    /**
+     * Store a downpayment record and — when status is 'paid' — mark the
+     * student's downpayment_paid flag so they can be enrolled in courses.
+     */
+    public function storeDownpayment(Request $request)
     {
-        // 1. Active term — single authoritative check
-        $currentTerm = Term::active()->first();
-
-        if (!$currentTerm) {
-            return back()->withErrors([
-                'course_id' => 'No active term found. Please set an active term first.',
-            ]);
-        }
-
-        if (!$currentTerm->is_enrollment_open) {
-            return back()->withErrors([
-                'course_id' => "Enrollment is closed for {$currentTerm->label}.",
-            ]);
-        }
-
         $validated = $request->validate([
-            'course_id' => 'required|exists:courses,id',
+            'student_number'  => ['required', 'string'],
+            'amount'          => ['required', 'numeric', 'min:0.01'],
+            'payment_date'    => ['nullable', 'date'],
+            'payment_method'  => ['nullable', 'in:cash,gcash,bank_transfer'],
+            'payment_status'  => ['required', 'in:pending,paid,cancelled'],
+            'reference_number' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $course = Course::findOrFail($validated['course_id']);
+        // ─────────────────────────────────────────────
+        // 1. Find student
+        // ─────────────────────────────────────────────
+        $student = Student::where('student_number', $validated['student_number'])->first();
 
-        // 2. Downpayment gate — block enrollment until downpayment is paid
-        $hasDownpayment = Payment::whereHas('studentEnrollment', function ($q) use ($student) {
-                $q->where('student_id', $student->id);
-            })
+        if (! $student) {
+            return back()->withInput()
+                ->withErrors(['student_number' => 'Student not found.']);
+        }
+
+        // ─────────────────────────────────────────────
+        // 2. Require an active term
+        // ─────────────────────────────────────────────
+        $currentTerm = Term::where('status', 'active')->first();
+
+        if (! $currentTerm) {
+            return back()->withErrors([
+                'student_number' => 'No active term found. Please set an active term first.',
+            ]);
+        }
+
+        // NOTE: intentionally NOT blocking on is_enrollment_open here —
+        // a downpayment is a prerequisite FOR enrollment, so it should be
+        // recordable even while the enrollment window is closed.
+
+        // ─────────────────────────────────────────────
+        // 3. FIX: Only create the StudentEnrollment anchor row
+        //    when the downpayment is actually being marked as PAID.
+        //    For pending/cancelled, look up an existing row only.
+        // ─────────────────────────────────────────────
+        if ($validated['payment_status'] === 'paid') {
+            $enrollment = StudentEnrollment::firstOrCreate(
+                [
+                    'student_id' => $student->id,
+                    'term_id'    => $currentTerm->id,
+                ],
+                [
+                    'status'          => 'pending',
+                    'enrollment_date' => now(),
+                ]
+            );
+        } else {
+            // pending or cancelled — only use an existing row, never create one
+            $enrollment = StudentEnrollment::where('student_id', $student->id)
+                ->where('term_id', $currentTerm->id)
+                ->first();
+
+            if (! $enrollment) {
+                return back()->withInput()->withErrors([
+                    'student_number' => 'No enrollment record found for this student in the active term. Record a paid downpayment first.',
+                ]);
+            }
+        }
+
+        // ─────────────────────────────────────────────
+        // 4. Prevent duplicate confirmed downpayment
+        // ─────────────────────────────────────────────
+        $alreadyPaid = $enrollment->payments()
             ->where('payment_type', 'downpayment')
             ->where('payment_status', 'paid')
             ->exists();
 
-        if (!$hasDownpayment) {
-            return back()->withErrors([
-                'course_id' => 'Cannot assign courses: student has not completed a downpayment yet.',
-            ]);
+        if ($alreadyPaid) {
+            return back()->withInput()
+                ->withErrors(['student_number' => 'This student already has a confirmed downpayment.']);
         }
 
-        // 3. Program validity
-        $generalProgram    = Program::firstWhere('code', 'GEN');
-        $allowedProgramIds = array_filter([
-            (int) $student->program,
-            $generalProgram ? (int) $generalProgram->id : null,
+        // ─────────────────────────────────────────────
+        // 5. Create payment record
+        // ─────────────────────────────────────────────
+        Payment::create([
+            'student_enrollment_id' => $enrollment->id,
+            'amount'                => $validated['amount'],
+            'payment_date'          => $validated['payment_date'] ?? now(),
+            'payment_method'        => $validated['payment_method'],
+            'payment_status'        => $validated['payment_status'],
+            'payment_type'          => 'downpayment',
+            'reference_number'      => $validated['reference_number'] ?? null,
         ]);
 
-        if (!in_array((int) $course->program_id, $allowedProgramIds, true)) {
-            return back()->withErrors([
-                'course_id' => 'This course does not belong to the student\'s program or general education.',
-            ]);
-        }
-
-        // 4. Duplicate check (scoped to current term)
-        $alreadyEnrolled = $student->studentEnrollments()
-            ->where('term_id', $currentTerm->id)
-            ->where('course_id', $course->id)
-            ->exists();
-
-        if ($alreadyEnrolled) {
-            return back()->withErrors([
-                'course_id' => 'Student is already enrolled in this course for this term.',
-            ]);
-        }
-
-        // 5. Slot check
-        $enrolledCount = StudentEnrollment::where('course_id', $course->id)
-            ->where('term_id', $currentTerm->id)
-            ->count();
-
-        if ($enrolledCount >= ($course->slots ?? 30)) {
-            return back()->withErrors([
-                'course_id' => 'Cannot assign course: all slots are full.',
-            ]);
-        }
-
-        // 6. Schedule conflict check
-        $hasTimeConflict = $student->studentEnrollments()
-            ->where('term_id', $currentTerm->id)
-            ->whereHas('course', function ($q) use ($course) {
-                $q->where('schedule_type', $course->schedule_type)
-                  ->where('start_time', '<', $course->end_time)
-                  ->where('end_time', '>', $course->start_time);
-            })
-            ->exists();
-
-        if ($hasTimeConflict) {
-            return back()->withErrors([
-                'course_id' => 'Schedule conflict detected with another enrolled course.',
-            ]);
-        }
-
-        // 7. Create enrollment + enrolled course record
-        $studentEnrollment = $student->studentEnrollments()->create([
-            'course_id'       => $course->id,
-            'enrollment_date' => now(),
-            'term_id'         => $currentTerm->id,
-            'status'          => 'enrolled',
-            'units'           => $course->units,
-        ]);
-
-        EnrolledCourse::create([
-            'student_enrollment_id' => $studentEnrollment->id,
-            'course_id'             => $course->id,
-            'professor_id'          => $course->professor_id ?? null,
-            'room_id'               => $course->room_id ?? null,
-            'course_price'          => $course->course_price ?? null,
-            'grade'                 => null,
-        ]);
-
-        // 8. Promote student status if needed
-        if ($student->status !== 'enrolled') {
-            $student->update(['status' => 'enrolled']);
+        // ─────────────────────────────────────────────
+        // 6. Unlock student if paid
+        // ─────────────────────────────────────────────
+        if ($validated['payment_status'] === 'paid') {
+            $student->update(['downpayment_paid' => true]);
         }
 
         return redirect()
-            ->route('admin.enrollment.assign', $student)
-            ->with('success', 'Course assigned successfully.');
+            ->route('admin.payments')
+            ->with('success', 'Downpayment recorded successfully.');
     }
 
-    public function editEnrollment(StudentEnrollment $studentEnrollment)
+    /**
+     * Admin confirms a pending downpayment → marks student as cleared.
+     * POST /admin/payments/{payment}/confirm-downpayment
+     */
+    public function confirmDownpayment(Payment $payment)
     {
-        $student           = $studentEnrollment->student;
-        $generalProgram    = Program::firstWhere('code', 'GEN');
-        $assignedCourseIds = $student->studentEnrollments()->pluck('course_id')->filter()->toArray();
-        $allowedProgramIds = array_filter([$student->program, $generalProgram?->id]);
+        if ($payment->payment_type !== 'downpayment') {
+            return back()->with('error', 'This is not a downpayment record.');
+        }
 
-        $availableCourses = Course::whereIn('program_id', $allowedProgramIds)
-            ->whereNotIn('id', array_filter($assignedCourseIds, fn($id) => $id !== $studentEnrollment->course_id))
-            ->with('program')
-            ->get();
+        $payment->update(['payment_status' => 'paid']);
 
-        return view('admin.enrollment.edit-enrollment', compact('studentEnrollment', 'availableCourses'));
+        // Unlock enrollment
+        $student = $payment->studentEnrollment?->student;
+        if ($student) {
+            $student->update(['downpayment_paid' => true]);
+        }
+
+        return back()->with('success', 'Downpayment confirmed. Student can now be assigned courses.');
     }
 
-    public function updateEnrollment(Request $request, StudentEnrollment $studentEnrollment)
+    // ═══════════════════════════════════════════════════════════════
+    //  CREATE / STORE  — regular tuition payment
+    // ═══════════════════════════════════════════════════════════════
+
+    public function create(Request $request)
+    {
+        $enrollment   = null;
+        $totalTuition = 0;
+        $downpayment  = 0;
+        $amountPaid   = 0;
+        $balance      = 0;
+        $alreadyPaid  = false;
+
+        $studentNumber = $request->get('student_number');
+
+        if ($studentNumber) {
+
+    $enrollment = StudentEnrollment::with([
+            'student.profile',
+            'payments',
+            'term',
+        ])
+        ->whereHas('student', function ($q) use ($studentNumber) {
+            $q->where('student_number', $studentNumber);
+        })
+        ->whereIn('status', ['verified', 'enrolled'])
+        ->latest()
+        ->first();
+
+    if ($enrollment) {
+
+        // ✅ TOTAL TUITION (based on enrolled courses relation)
+        $totalTuition = $enrollment->course?->course_price ?? 0;
+
+        // If student can have multiple courses per enrollment:
+        // $totalTuition = $enrollment->courses->sum('course_price');
+
+        $downpayment = \App\Models\Payment::whereHas('studentEnrollment', function ($q) use ($enrollment) {
+            $q->where('student_id', $enrollment->student_id);
+            })
+            ->where('payment_type', 'downpayment')
+            ->where('payment_status', 'paid')
+            ->value('amount') ?? 0;
+
+        // ✅ TUITION PAYMENTS
+        $amountPaid = $enrollment->payments()
+            ->where('payment_type', 'tuition')
+            ->whereNotIn('payment_status', ['cancelled', 'for_review'])
+            ->sum('amount');
+
+        // ✅ BALANCE
+        $balance = max(0, $totalTuition - $downpayment - $amountPaid);
+
+        $alreadyPaid = $balance <= 0 && $totalTuition > 0;
+    }
+}
+
+        return view('admin.payments.create-payment', compact(
+            'enrollment',
+            'totalTuition',
+            'downpayment',
+            'amountPaid',
+            'balance',
+            'alreadyPaid',
+            'studentNumber',
+        ));
+    }
+
+    public function store(Request $request)
     {
         $validated = $request->validate([
-            'course_id' => 'required|exists:courses,id',
+            'student_number' => ['required', 'string'],
+            'amount'         => ['required', 'numeric', 'min:0.01'],
+            'payment_date'   => ['nullable', 'date'],
+            'payment_method' => ['nullable', 'in:cash,gcash,bank_transfer'],
+            'payment_status' => ['required', 'in:pending,partial,paid,cancelled'],
         ]);
 
-        $course            = Course::findOrFail($validated['course_id']);
-        $generalProgram    = Program::firstWhere('code', 'GEN');
-        $allowedProgramIds = array_filter([$studentEnrollment->student->program, $generalProgram?->id]);
+        $enrollment = StudentEnrollment::with('payments', 'student')
+            ->whereHas('student', fn ($q) => $q->where('student_number', $validated['student_number']))
+            ->whereIn('status', ['verified', 'enrolled'])
+            ->latest()
+            ->first();
 
-        if (!in_array($course->program_id, $allowedProgramIds, true)) {
-            return back()->withErrors([
-                'course_id' => 'This course does not belong to the student\'s program or general education.',
-            ]);
+        if (! $enrollment) {
+            return back()->withInput()
+                ->withErrors(['student_number' => 'No active enrollment found for this student number.']);
         }
 
-        if ($studentEnrollment->student->studentEnrollments()
-            ->where('course_id', $course->id)
-            ->where('id', '<>', $studentEnrollment->id)
-            ->exists()
-        ) {
-            return back()->withErrors([
-                'course_id' => 'This student is already enrolled in this course.',
-            ]);
+        $totalTuition = $enrollment->enrolledCourse()->sum('course_price');
+        $downpayment  = $enrollment->payments()->where('payment_type', 'downpayment')->whereNotIn('payment_status', ['cancelled'])->sum('amount');
+        $amountPaid   = $enrollment->payments
+                            ->where('payment_type', 'tuition')
+                            ->whereNotIn('payment_status', ['cancelled'])
+                            ->sum('amount');
+        $balance      = max(0, $totalTuition - ($amountPaid + $downpayment));
+
+        if ($totalTuition > 0 && $balance <= 0) {
+            return back()->withInput()
+                ->withErrors(['student_number' => 'This student has already fully paid their tuition.']);
         }
 
-        $studentEnrollment->update(['course_id' => $course->id]);
+        if ($validated['amount'] > $balance && $validated['payment_status'] !== 'cancelled') {
+            return back()->withInput()
+                ->withErrors(['amount' => 'The amount exceeds the remaining balance of ₱' . number_format($balance, 2) . '.']);
+        }
 
-        // Sync the EnrolledCourse record so it doesn't go stale
-        EnrolledCourse::where('student_enrollment_id', $studentEnrollment->id)
-            ->update([
-                'course_id'    => $course->id,
-                'professor_id' => $course->professor_id ?? null,
-                'room_id'      => $course->room_id ?? null,
-                'course_price' => $course->course_price ?? null,
-            ]);
+        Payment::create([
+            'student_enrollment_id' => $enrollment->id,
+            'amount'                => $validated['amount'],
+            'payment_date'          => $validated['payment_date'] ?? now(),
+            'payment_method'        => $validated['payment_method'],
+            'payment_status'        => $validated['payment_status'],
+            'payment_type'          => 'tuition',
+        ]);
 
         return redirect()
-            ->route('admin.enrollment.assign', $studentEnrollment->student)
-            ->with('success', 'Course assignment updated successfully.');
+            ->route('admin.payments')
+            ->with('success', 'Payment recorded successfully.');
     }
 
-    public function removeEnrollment(StudentEnrollment $studentEnrollment)
+    // ═══════════════════════════════════════════════════════════════
+    //  EDIT / UPDATE
+    // ═══════════════════════════════════════════════════════════════
+
+    public function edit(Payment $payment)
     {
-        $student = $studentEnrollment->student;
+        $payment->load('studentEnrollment.student.profile', 'studentEnrollment.payments');
 
-        // Delete child EnrolledCourse first to avoid orphaned records
-        EnrolledCourse::where('student_enrollment_id', $studentEnrollment->id)->delete();
+        $enrollment   = $payment->studentEnrollment;
+        $totalTuition = $enrollment->total_tuition ?? 0;
+        $downpayment  = $enrollment->payments()->where('payment_type', 'downpayment')->whereNotIn('payment_status', ['cancelled'])->sum('amount');
+        $amountPaid   = $enrollment->payments
+                            ->where('payment_type', 'tuition')
+                            ->whereNotIn('payment_status', ['cancelled'])
+                            ->sum('amount');
+        $balance      = max(0, $totalTuition - ($amountPaid + $downpayment));
 
-        $studentEnrollment->delete();
+        return view('admin.payments.edit-payment', compact('payment', 'enrollment', 'totalTuition', 'amountPaid', 'balance'));
+    }
+
+    public function update(Request $request, Payment $payment)
+    {
+        $validated = $request->validate([
+            'payment_status' => ['required', 'in:pending,partial,paid,cancelled,for_review'],
+            'payment_method' => ['nullable', 'in:cash,gcash,bank_transfer'],
+            'amount'         => ['required', 'numeric', 'min:0.01'],
+            'payment_date'   => ['nullable', 'date'],
+        ]);
+
+        $payment->update($validated);
+
+        // If a downpayment is being updated to paid, unlock the student
+        if ($payment->payment_type === 'downpayment' && $validated['payment_status'] === 'paid') {
+            $payment->studentEnrollment?->student?->update(['downpayment_paid' => true]);
+        }
 
         return redirect()
-            ->route('admin.enrollment.assign', $student->id)
-            ->with('success', 'Course enrollment removed.');
+            ->route('admin.payments')
+            ->with('success', 'Payment updated successfully.');
     }
 }

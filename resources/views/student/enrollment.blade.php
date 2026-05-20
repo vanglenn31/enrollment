@@ -74,7 +74,7 @@
                             <p class="text-sm text-gray-500 mt-1">Track your enrollment progress and see what the next required step is.</p>
                         </div>
                         <div class="space-x-2 text-sm">
-                            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-700">Status: {{ ucfirst($student?->status ?? 'unknown') }}</span>
+                            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-700">Status: {{ $student?->is_verified == true ? 'Verified' : 'Pending' }}</span>
                             <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-700">Program: {{ $student?->programRelation->name ?? 'Not assigned' }}</span>
                         </div>
                     </div>

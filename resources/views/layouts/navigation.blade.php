@@ -1,11 +1,10 @@
-<nav x-data="{ open: false }"
+<nav x-data="{ open: false, notifOpen: false }"
     class="sticky top-0 z-50 w-full h-16 sm:h-16 lg:h-20 bg-first shadow-md px-3 sm:px-4 lg:px-8">
 
     <div class="w-full mx-auto h-full flex items-center justify-between gap-2">
 
         <!-- LEFT: Branding -->
         <div class="flex-1 flex items-center gap-3">
-            <!-- Logo mark -->
             <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
                 <img src="{{ asset('images/logo.png') }}" alt="UIM logo" class="w-full h-full">
             </div>
@@ -22,13 +21,92 @@
         <!-- RIGHT SIDE -->
         <div class="flex items-center gap-2 sm:gap-3">
 
-            <!-- Bell Notification -->
-            <button class="hidden sm:flex p-2 rounded-full hover:bg-white/20 transition relative">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 11-6 0"/>
-                </svg>
-            </button>
+            {{-- ══════════════════════════════════════════════════════════ --}}
+            {{-- BELL NOTIFICATION (visible to all roles)                  --}}
+            {{-- ══════════════════════════════════════════════════════════ --}}
+            @php
+                $unreadNotifs = \App\Models\Announcement::forUser(Auth::id())
+                    ->unread()
+                    ->latest()
+                    ->take(15)
+                    ->get();
+
+                $unreadCount = $unreadNotifs->count();
+            @endphp
+
+            <div class="hidden sm:block relative" x-data="{ notifOpen: false }">
+                <button
+                    @click="notifOpen = !notifOpen"
+                    class="p-2 rounded-full hover:bg-white/20 transition relative">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 11-6 0"/>
+                    </svg>
+                    @if($unreadCount > 0)
+                        <span class="absolute top-1 right-1 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full leading-none">
+                            {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                        </span>
+                    @endif
+                </button>
+
+                <!-- Notification Dropdown -->
+                <div
+                    x-show="notifOpen"
+                    @click.outside="notifOpen = false"
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 scale-100"
+                    x-transition:leave-end="opacity-0 scale-95"
+                    class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50"
+                    style="display: none;">
+
+                    <!-- Header -->
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
+                        <span class="text-sm font-semibold text-gray-700">Notifications</span>
+                        @if($unreadCount > 0)
+                            <form method="POST" action="{{ route('notifications.markAllRead') }}">
+                                @csrf
+                                <button type="submit" class="text-xs text-blue-600 hover:underline">Mark all read</button>
+                            </form>
+                        @endif
+                    </div>
+
+                    <!-- List -->
+                    <div class="max-h-80 overflow-y-auto divide-y divide-gray-50">
+                        @forelse($unreadNotifs as $notif)
+                            <form method="POST" action="{{ route('notifications.markRead', $notif->id) }}">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full text-left px-4 py-3 hover:bg-gray-50 transition flex items-start gap-3">
+
+                                    {{-- Icon based on type --}}
+                                    <div class="flex-shrink-0 mt-0.5">
+                                        @if($notif->type === 'payment')
+                                            <span class="text-lg">💳</span>
+                                        @elseif($notif->type === 'term')
+                                            <span class="text-lg">📅</span>
+                                        @else
+                                            <span class="text-lg">📢</span>
+                                        @endif
+                                    </div>
+
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-semibold text-gray-800 leading-tight">{{ $notif->title }}</p>
+                                        <p class="text-xs text-gray-500 mt-0.5 line-clamp-2">{{ $notif->body }}</p>
+                                        <p class="text-[10px] text-gray-400 mt-1">{{ $notif->created_at->diffForHumans() }}</p>
+                                    </div>
+                                </button>
+                            </form>
+                        @empty
+                            <div class="px-4 py-8 text-center">
+                                <p class="text-sm text-gray-400">You're all caught up! 🎉</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
 
             <!-- Profile Dropdown (Desktop) -->
             <div class="hidden sm:flex items-center">
@@ -36,7 +114,6 @@
                     <x-slot name="trigger">
                         <button class="flex items-center gap-2.5 px-2 sm:px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 transition border border-white/20">
 
-                            {{-- User Initials Avatar --}}
                             <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm select-none">
                                 @if(Auth::user()->role?->role === 'admin')
                                     AD
@@ -60,7 +137,7 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        {{-- Mini user card at top of dropdown --}}
+                        {{-- Mini user card --}}
                         <div class="px-4 py-3 border-b border-gray-100">
                             <div class="flex items-center gap-2">
                                 <div class="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
@@ -92,6 +169,19 @@
                                 Profile
                             </div>
                         </x-dropdown-link>
+
+                        {{-- ── Student-only: Payment quick link ── --}}
+                        @if(Auth::user()->role?->role === 'student')
+                            <x-dropdown-link :href="route('student.payment')">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                    </svg>
+                                    My Payments
+                                </div>
+                            </x-dropdown-link>
+                        @endif
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -128,7 +218,9 @@
         </div>
     </div>
 
-    <!-- MOBILE DROPDOWN MENU -->
+    {{-- ════════════════════════════════════════════════════════════════════ --}}
+    {{-- MOBILE DROPDOWN MENU                                               --}}
+    {{-- ════════════════════════════════════════════════════════════════════ --}}
     <div x-show="open" x-transition
         class="sm:hidden px-3 pb-3 space-y-1 bg-white shadow-lg rounded-b-xl border-t border-gray-100">
 
@@ -151,7 +243,37 @@
                 </p>
                 <p class="text-xs text-gray-400 capitalize">{{ $role }}</p>
             </div>
+            {{-- Mobile unread badge --}}
+            @if($unreadCount > 0)
+                <span class="ml-auto flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 rounded-full">
+                    {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                </span>
+            @endif
         </div>
+
+        {{-- Mobile notifications list --}}
+        @if($unreadCount > 0)
+            <div class="bg-gray-50 rounded-lg p-2 mb-2 space-y-1">
+                <p class="text-xs font-semibold text-gray-500 px-2 py-1">Notifications</p>
+                @foreach($unreadNotifs->take(5) as $notif)
+                    <form method="POST" action="{{ route('notifications.markRead', $notif->id) }}">
+                        @csrf
+                        <button type="submit" class="w-full text-left px-2 py-2 rounded-lg hover:bg-gray-100 transition flex items-start gap-2">
+                            <span class="text-base flex-shrink-0">
+                                @if($notif->type === 'payment') 💳
+                                @elseif($notif->type === 'term') 📅
+                                @else 📢
+                                @endif
+                            </span>
+                            <div>
+                                <p class="text-xs font-semibold text-gray-800">{{ $notif->title }}</p>
+                                <p class="text-xs text-gray-500 line-clamp-1">{{ $notif->body }}</p>
+                            </div>
+                        </button>
+                    </form>
+                @endforeach
+            </div>
+        @endif
 
         @if($role === 'admin')
             <x-responsive-nav-link :href="route('admin.dashboard')">Dashboard</x-responsive-nav-link>
@@ -161,7 +283,6 @@
             <x-responsive-nav-link :href="route('admin.students')">Students</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.enrollment.enroll')">Enrollment</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.professors')">Professors</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.registrars')">Registrar</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.payments')">Payments</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.rooms.index')">Rooms</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.terms.index')">Terms</x-responsive-nav-link>

@@ -112,121 +112,223 @@
                     </div> -->
                 </div>
 
-                {{-- Courses Grouped by Term --}}
-                @if($enrollmentsByTerm->isEmpty())
+                {{-- ═══════════════════════════════════════════════════════════════ --}}
+                {{-- CURRENTLY ENROLLED (active term)                               --}}
+                {{-- ═══════════════════════════════════════════════════════════════ --}}
+                @if($activeTerm && $currentTermEnrollments->isNotEmpty())
+                    @php
+                        $currentUnits = $currentTermEnrollments->sum(fn($ec) => optional($ec->course)->units ?? 0);
+                    @endphp
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <h2 class="text-base font-bold text-gray-800">Currently Enrolled</h2>
+                            <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse inline-block"></span>
+                                {{ $activeTerm->label }}
+                            </span>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden">
+                            {{-- Term Header --}}
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 border-b border-blue-50 bg-blue-50/60">
+                                <div class="flex items-center gap-3">
+                                    <div>
+                                        <h3 class="font-bold text-gray-900 text-base">{{ $activeTerm->label }}</h3>
+                                        <p class="text-xs text-gray-500 mt-0.5">
+                                            {{ $activeTerm->start_date?->format('M d, Y') ?? 'TBD' }}
+                                            @if($activeTerm->end_date) — {{ $activeTerm->end_date->format('M d, Y') }} @endif
+                                        </p>
+                                    </div>
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-700">
+                                        Active
+                                    </span>
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{ $currentTermEnrollments->count() }} course{{ $currentTermEnrollments->count() !== 1 ? 's' : '' }} · {{ $currentUnits }} units
+                                </div>
+                            </div>
+
+                            {{-- Courses Table --}}
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                                            <th class="py-3 px-6 text-left">Course</th>
+                                            <th class="py-3 px-4 text-left">Professor</th>
+                                            <th class="py-3 px-4 text-left">Room</th>
+                                            <th class="py-3 px-4 text-center">Units</th>
+                                            <th class="py-3 px-4 text-center">Price</th>
+                                            <th class="py-3 px-6 text-center">Grade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-50">
+                                        @foreach($currentTermEnrollments as $enrolledCourse)
+                                            <tr class="hover:bg-blue-50/30 transition-colors">
+                                                <td class="py-4 px-6">
+                                                    <p class="font-semibold text-gray-900">{{ optional($enrolledCourse->course)->course_code ?? '—' }}</p>
+                                                    <p class="text-xs text-gray-500 mt-0.5">{{ optional($enrolledCourse->course)->course_name ?? 'Unknown course' }}</p>
+                                                </td>
+                                                <td class="py-4 px-4 text-gray-600">
+                                                    {{ optional(optional($enrolledCourse->professor)->profile)->last_name ?? 'TBA' }}
+                                                </td>
+                                                <td class="py-4 px-4 text-gray-600">
+                                                    {{ optional($enrolledCourse->room)->room_name ?? 'TBA' }}
+                                                </td>
+                                                <td class="py-4 px-4 text-center text-gray-700">
+                                                    {{ optional($enrolledCourse->course)->units ?? '—' }}
+                                                </td>
+                                                <td class="py-4 px-4 text-center text-gray-700">
+                                                    ₱{{ number_format($enrolledCourse->course_price ?? 0, 2) }}
+                                                </td>
+                                                <td class="py-4 px-6 text-center">
+                                                    @if($enrolledCourse->grade !== null)
+                                                        @php
+                                                            $g = (float) $enrolledCourse->grade;
+                                                            $gradeClass = $g >= 90 ? 'bg-green-100 text-green-700'
+                                                                : ($g >= 75 ? 'bg-blue-50 text-blue-700'
+                                                                : 'bg-red-50 text-red-700');
+                                                        @endphp
+                                                        <span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-bold {{ $gradeClass }}">
+                                                            {{ number_format($g, 2) }}
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-slate-100 text-slate-500">
+                                                            In progress
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- ═══════════════════════════════════════════════════════════════ --}}
+                {{-- ACADEMIC HISTORY (ended terms)                                 --}}
+                {{-- ═══════════════════════════════════════════════════════════════ --}}
+                @if($enrollmentsByTerm->isNotEmpty())
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <h2 class="text-base font-bold text-gray-800">Academic History</h2>
+                            <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+                                {{ $enrollmentsByTerm->count() }} term{{ $enrollmentsByTerm->count() !== 1 ? 's' : '' }}
+                            </span>
+                        </div>
+
+                        <div class="space-y-4">
+                            @foreach($enrollmentsByTerm as $termGroup)
+                                @php
+                                    $term      = $termGroup['term'];
+                                    $courses   = $termGroup['courses'];
+                                    $termUnits = $courses->sum(fn($ec) => optional($ec->course)->units ?? 0);
+                                    $graded    = $courses->filter(fn($ec) => $ec->grade !== null);
+                                    $termGwa   = $graded->count() ? round($graded->avg('grade'), 2) : null;
+                                @endphp
+
+                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                    {{-- Term Header --}}
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 border-b border-gray-100 bg-slate-50">
+                                        <div class="flex items-center gap-3">
+                                            <div>
+                                                <h3 class="font-bold text-gray-900 text-base">
+                                                    {{ $term ? $term->label : 'Previous Term' }}
+                                                </h3>
+                                                @if($term)
+                                                    <p class="text-xs text-gray-500 mt-0.5">
+                                                        {{ $term->start_date?->format('M d, Y') ?? 'TBD' }}
+                                                        @if($term->end_date) — {{ $term->end_date->format('M d, Y') }} @endif
+                                                    </p>
+                                                @endif
+                                            </div>
+                                            @if($term)
+                                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $term->statusBadgeClass() }}">
+                                                    {{ ucfirst($term->status) }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center gap-4 text-sm">
+                                            <span class="text-gray-500">
+                                                {{ $courses->count() }} course{{ $courses->count() !== 1 ? 's' : '' }} · {{ $termUnits }} units
+                                            </span>
+                                            @if($termGwa !== null)
+                                                <span class="font-semibold text-gray-800">Term Avg: {{ number_format($termGwa, 2) }}</span>
+                                            @else
+                                                <span class="text-gray-400 text-xs">Grades pending</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    {{-- Courses Table --}}
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-sm">
+                                            <thead>
+                                                <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                                                    <th class="py-3 px-6 text-left">Course</th>
+                                                    <th class="py-3 px-4 text-left">Professor</th>
+                                                    <th class="py-3 px-4 text-left">Room</th>
+                                                    <th class="py-3 px-4 text-center">Units</th>
+                                                    <th class="py-3 px-4 text-center">Price</th>
+                                                    <th class="py-3 px-6 text-center">Grade</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-50">
+                                                @foreach($courses as $enrolledCourse)
+                                                    <tr class="hover:bg-slate-50 transition-colors">
+                                                        <td class="py-4 px-6">
+                                                            <p class="font-semibold text-gray-900">{{ optional($enrolledCourse->course)->course_code ?? '—' }}</p>
+                                                            <p class="text-xs text-gray-500 mt-0.5">{{ optional($enrolledCourse->course)->course_name ?? 'Unknown course' }}</p>
+                                                        </td>
+                                                        <td class="py-4 px-4 text-gray-600">
+                                                            {{ optional(optional($enrolledCourse->professor)->profile)->last_name ?? 'TBA' }}
+                                                        </td>
+                                                        <td class="py-4 px-4 text-gray-600">
+                                                            {{ optional($enrolledCourse->room)->room_name ?? 'TBA' }}
+                                                        </td>
+                                                        <td class="py-4 px-4 text-center text-gray-700">
+                                                            {{ optional($enrolledCourse->course)->units ?? '—' }}
+                                                        </td>
+                                                        <td class="py-4 px-4 text-center text-gray-700">
+                                                            ₱{{ number_format($enrolledCourse->course_price ?? 0, 2) }}
+                                                        </td>
+                                                        <td class="py-4 px-6 text-center">
+                                                            @if($enrolledCourse->grade !== null)
+                                                                @php
+                                                                    $g = (float) $enrolledCourse->grade;
+                                                                    $gradeClass = $g >= 90 ? 'bg-green-100 text-green-700'
+                                                                        : ($g >= 75 ? 'bg-blue-50 text-blue-700'
+                                                                        : 'bg-red-50 text-red-700');
+                                                                @endphp
+                                                                <span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-bold {{ $gradeClass }}">
+                                                                    {{ number_format($g, 2) }}
+                                                                </span>
+                                                            @else
+                                                                <span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-orange-50 text-orange-500">
+                                                                    Pending
+                                                                </span>
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Empty state — nothing at all --}}
+                @if($currentTermEnrollments->isEmpty() && $enrollmentsByTerm->isEmpty())
                     <div class="bg-white rounded-2xl shadow-sm border border-dashed border-gray-300 p-12 text-center">
                         <div class="mx-auto w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
                             <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                         </div>
                         <p class="font-semibold text-gray-700">No courses yet</p>
                         <p class="mt-1 text-sm text-gray-500">Your enrolled courses will appear here once the admin assigns them.</p>
-                    </div>
-                @else
-                    <div class="space-y-6">
-                        @foreach($enrollmentsByTerm as $termGroup)
-                            @php
-                                $term       = $termGroup['term'];
-                                $courses    = $termGroup['courses'];
-                                $isActive   = $term->status === 'active';
-                                $termUnits  = $courses->sum(fn($ec) => optional($ec->course)->units ?? 0);
-                                $graded     = $courses->filter(fn($ec) => $ec->grade !== null);
-                                $termGwa    = $graded->count()
-                                    ? round($graded->avg('grade'), 2)
-                                    : null;
-                            @endphp
-
-                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                {{-- Term Header --}}
-                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 border-b border-gray-100 bg-slate-50">
-                                    <div class="flex items-center gap-3">
-                                        <div>
-                                            <h2 class="font-bold text-gray-900 text-base">{{ $term->label }}</h2>
-                                            <p class="text-xs text-gray-500 mt-0.5">
-                                                {{ $term->start_date?->format('M d, Y') ?? 'TBD' }}
-                                                @if($term->end_date) — {{ $term->end_date->format('M d, Y') }} @endif
-                                            </p>
-                                        </div>
-                                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $term->statusBadgeClass() }}">
-                                            {{ ucfirst($term->status) }}
-                                        </span>
-                                        @if($isActive)
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse inline-block"></span>
-                                                Current Term
-                                            </span>
-                                        @endif
-                                    </div>
-                                    <div class="flex items-center gap-4 text-sm">
-                                        <span class="text-gray-500">{{ $courses->count() }} course{{ $courses->count() !== 1 ? 's' : '' }} · {{ $termUnits }} units</span>
-                                        @if($termGwa !== null)
-                                            <span class="font-semibold text-gray-800">Term GWA: {{ number_format($termGwa, 2) }}</span>
-                                        @else
-                                            <span class="text-gray-400 text-xs">Grades pending</span>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                {{-- Courses Table --}}
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-sm">
-                                        <thead>
-                                            <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
-                                                <th class="py-3 px-6 text-left">Course</th>
-                                                <th class="py-3 px-4 text-left">Professor</th>
-                                                <th class="py-3 px-4 text-left">Room</th>
-                                                <th class="py-3 px-4 text-center">Units</th>
-                                                <th class="py-3 px-4 text-center">Price</th>
-                                                <th class="py-3 px-6 text-center">Grade</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-gray-50">
-                                            @foreach($courses as $enrolledCourse)
-                                                <tr class="hover:bg-slate-50 transition-colors">
-                                                    <td class="py-4 px-6">
-                                                        <p class="font-semibold text-gray-900">{{ optional($enrolledCourse->course)->course_code ?? '—' }}</p>
-                                                        <p class="text-xs text-gray-500 mt-0.5">{{ optional($enrolledCourse->course)->course_name ?? 'Unknown course' }}</p>
-                                                    </td>
-                                                    <td class="py-4 px-4 text-gray-600">
-                                                        {{ optional(optional($enrolledCourse->professor)->profile)->last_name ?? 'TBA' }}
-                                                    </td>
-                                                    <td class="py-4 px-4 text-gray-600">
-                                                        {{ optional($enrolledCourse->room)->room_name ?? 'TBA' }}
-                                                    </td>
-                                                    <td class="py-4 px-4 text-center text-gray-700">
-                                                        {{ optional($enrolledCourse->course)->units ?? '—' }}
-                                                    </td>
-                                                    <td class="py-4 px-4 text-center text-gray-700">
-                                                        ₱{{ number_format($enrolledCourse->course_price ?? 0, 2) }}
-                                                    </td>
-                                                    <td class="py-4 px-6 text-center">
-                                                        @if($enrolledCourse->grade !== null)
-                                                            @php
-                                                                $g = (float) $enrolledCourse->grade;
-                                                                $gradeClass = $g <= 1.5 ? 'bg-green-100 text-green-700'
-                                                                    : ($g <= 2.5 ? 'bg-blue-50 text-blue-700'
-                                                                    : ($g <= 3.0 ? 'bg-yellow-50 text-yellow-700'
-                                                                    : 'bg-red-50 text-red-700'));
-                                                            @endphp
-                                                            <span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-bold {{ $gradeClass }}">
-                                                                {{ number_format($g, 2) }}
-                                                            </span>
-                                                        @elseif($isActive)
-                                                            <span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-slate-100 text-slate-500">
-                                                                In progress
-                                                            </span>
-                                                        @else
-                                                            <span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-orange-50 text-orange-500">
-                                                                Pending
-                                                            </span>
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        @endforeach
                     </div>
                 @endif
 

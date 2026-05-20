@@ -36,54 +36,67 @@ class StudentEnrollmentController extends Controller
     }
 
     public function assignCoursesForm(Request $request, Student $student)
-    {
-        $student->refresh();
-        $student->load(['profile', 'programRelation', 'studentEnrollments.course']);
+{
+    $student->refresh();
+    $student->load(['profile', 'programRelation', 'studentEnrollments.course']);
 
-        // Check if student has a paid downpayment — pass to view so UI can warn admin
-        $hasDownpayment = Payment::whereHas('studentEnrollment', function ($q) use ($student) {
-                $q->where('student_id', $student->id);
-            })
-            ->where('payment_type', 'downpayment')
-            ->where('payment_status', 'paid')
-            ->exists();
+    // Check if student has a paid downpayment
+    $hasDownpayment = Payment::whereHas('studentEnrollment', function ($q) use ($student) {
+            $q->where('student_id', $student->id);
+        })
+        ->where('payment_type', 'downpayment')
+        ->where('payment_status', 'paid')
+        ->exists();
 
-        $currentCourses    = $student->studentEnrollments()->whereNotNull('course_id')->pluck('course_id')->toArray();
-        $generalProgram    = Program::firstWhere('code', 'GEN');
-        $allowedProgramIds = array_filter([$student->program, $generalProgram?->id]);
+    // Current enrolled courses
+    $currentCourses = $student->studentEnrollments()
+        ->whereNotNull('course_id')
+        ->pluck('course_id')
+        ->toArray();
 
-        $availableCourses = Course::whereIn('program_id', $allowedProgramIds)
-            ->whereNotIn('id', $currentCourses)
-            ->with('program')
-            ->get();
+    // NEW: Courses already passed (grade >= 75)
+    $passedCourses = $student->enrolledCourses()
+        ->whereNotNull('course_id')
+        ->where('grade', '>=', 75)
+        ->pluck('course_id')
+        ->toArray();
 
-        // Paginate by course_name groups (5 per page)
-        $grouped     = $availableCourses->groupBy('course_name');
-        $perPage     = 5;
-        $currentPage = (int) $request->input('course_page', 1);
-        $totalGroups = $grouped->count();
-        $groupedPage = $grouped->slice(($currentPage - 1) * $perPage, $perPage);
+    $generalProgram    = Program::firstWhere('code', 'GEN');
+    $allowedProgramIds = array_filter([$student->program, $generalProgram?->id]);
 
-        $groupPaginator = new \Illuminate\Pagination\LengthAwarePaginator(
-            $groupedPage,
-            $totalGroups,
-            $perPage,
-            $currentPage,
-            [
-                'path'     => $request->url(),
-                'query'    => array_merge($request->query(), ['course_page' => null]),
-                'pageName' => 'course_page',
-            ]
-        );
+    $availableCourses = Course::whereIn('program_id', $allowedProgramIds)
+        ->whereNotIn('id', $currentCourses)
+        ->whereNotIn('id', $passedCourses) // 🔥 prevents re-enrolling passed courses
+        ->with('program')
+        ->get();
 
-        return view('admin.enrollment.assign-courses', compact(
-            'student',
-            'currentCourses',
-            'availableCourses',
-            'groupPaginator',
-            'hasDownpayment',
-        ));
-    }
+    // Paginate by course_name groups (5 per page)
+    $grouped     = $availableCourses->groupBy('course_name');
+    $perPage     = 5;
+    $currentPage = (int) $request->input('course_page', 1);
+    $totalGroups = $grouped->count();
+    $groupedPage = $grouped->slice(($currentPage - 1) * $perPage, $perPage);
+
+    $groupPaginator = new \Illuminate\Pagination\LengthAwarePaginator(
+        $groupedPage,
+        $totalGroups,
+        $perPage,
+        $currentPage,
+        [
+            'path'     => $request->url(),
+            'query'    => array_merge($request->query(), ['course_page' => null]),
+            'pageName' => 'course_page',
+        ]
+    );
+
+    return view('admin.enrollment.assign-courses', compact(
+        'student',
+        'currentCourses',
+        'availableCourses',
+        'groupPaginator',
+        'hasDownpayment',
+    ));
+}
 
     public function storeEnrollment(Request $request, Student $student)
     {
@@ -184,12 +197,13 @@ class StudentEnrollmentController extends Controller
         ]);
 
         EnrolledCourse::create([
+            'student_id'   => $student->id,
             'student_enrollment_id' => $studentEnrollment->id,
-            'course_id'             => $course->id,
-            'professor_id'          => $course->professor_id ?? null,
-            'room_id'               => $course->room_id ?? null,
-            'course_price'          => $course->course_price ?? null,
-            'grade'                 => null,
+            'course_id'    => $course->id,
+            'professor_id' => $course->professor_id ?? null,
+            'room_id'      => $course->room_id ?? null,
+            'course_price' => $course->course_price ?? 0,
+            'grade'        => null,
         ]);
 
         // 8. Promote student status if needed
@@ -245,8 +259,9 @@ class StudentEnrollmentController extends Controller
 
         $studentEnrollment->update(['course_id' => $course->id]);
 
-        // Sync the EnrolledCourse record so it doesn't go stale
-        EnrolledCourse::where('student_enrollment_id', $studentEnrollment->id)
+        // Sync the EnrolledCourse record — match by student_id + old course_id
+        EnrolledCourse::where('student_id', $studentEnrollment->student_id)
+            ->where('course_id', $studentEnrollment->getOriginal('course_id') ?? $course->id)
             ->update([
                 'course_id'    => $course->id,
                 'professor_id' => $course->professor_id ?? null,
@@ -261,10 +276,13 @@ class StudentEnrollmentController extends Controller
 
     public function removeEnrollment(StudentEnrollment $studentEnrollment)
     {
-        $student = $studentEnrollment->student;
+        $student   = $studentEnrollment->student;
+        $courseId  = $studentEnrollment->course_id;
 
-        // Delete child EnrolledCourse first to avoid orphaned records
-        EnrolledCourse::where('student_enrollment_id', $studentEnrollment->id)->delete();
+        // Delete the EnrolledCourse record matched by student + course
+        EnrolledCourse::where('student_id', $student->id)
+            ->where('course_id', $courseId)
+            ->delete();
 
         $studentEnrollment->delete();
 

@@ -9,25 +9,42 @@ use Illuminate\Http\Request;
 class ProgramController extends Controller
 {
     public function programs(Request $request)
-{
-    $search = $request->input('search');
+    {
+        $search = $request->input('search');
+        $status = $request->input('status'); // '', 'active', or 'inactive'
 
-    $programs = Program::with('department')
-        ->when($search, function ($query, $search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhereHas('department', function ($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
+        $base = Program::with('department')
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('code', 'like', "%{$search}%")
+                      ->orWhereHas('department', function ($q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%");
+                      });
+                });
             });
-        })
-        ->latest()
-        ->paginate(10)   // ✅ FIXED
-        ->withQueryString();
 
-    return view('admin.programs.programt', compact('programs', 'search'));
-}
+        // Counts respect search but not the status filter
+        $totalCount    = (clone $base)->count();
+        $activeCount   = (clone $base)->where('status', 'active')->count();
+        $inactiveCount = (clone $base)->where('status', 'inactive')->count();
+
+        // Apply status filter to main query
+        if ($status === 'active' || $status === 'inactive') {
+            $base->where('status', $status);
+        }
+
+        $programs = $base->latest()->paginate(10)->withQueryString();
+
+        return view('admin.programs.programt', compact(
+            'programs',
+            'search',
+            'status',
+            'totalCount',
+            'activeCount',
+            'inactiveCount'
+        ));
+    }
 
     public function editProgram(Program $program)
     {
@@ -71,20 +88,14 @@ class ProgramController extends Controller
 
     public function deactivateProgram(Program $program)
     {
-            $program->update([
-                'status' => 'inactive'
-            ]);
+        $program->update(['status' => 'inactive']);
 
-            return back()->with('success', 'Program deactivated.');
+        return back()->with('success', 'Program deactivated.');
     }
 
     public function activateProgram(Program $program)
     {
-        
-        $program->update([
-            'status' => 'active'
-        ]);
-        
+        $program->update(['status' => 'active']);
 
         return back()->with('success', 'Program activated.');
     }

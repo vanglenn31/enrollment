@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Room;
 
-
 class RoomController extends Controller
 {
     public function rooms(Request $request)
     {
         $search = $request->input('search');
+
+        $totalCount = Room::count();
 
         $rooms = Room::when($search, function ($query, $search) {
                 $query->where('room_name', 'like', "%{$search}%")
@@ -20,7 +21,7 @@ class RoomController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.room.rooms', compact('rooms', 'search'));
+        return view('admin.room.rooms', compact('rooms', 'search', 'totalCount'));
     }
 
     public function createRoom()

@@ -9,7 +9,6 @@
 
 <div class="flex min-h-screen bg-gray-100">
 
-    <!-- SIDEBAR — rendered based on role -->
     <aside class="hidden lg:block fixed inset-y-0 left-0 w-fit ">
         @if($isAdmin)
             @include('layouts.admin_side_bar')

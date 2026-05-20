@@ -54,7 +54,7 @@
 
             <!-- Department -->
             <a href="{{ route('admin.department.department') }}"
-               class="{{ request()->routeIs('admin.department') ? 'bg-blue-400 text-white font-semibold shadow-sm' : 'text-gray-700 hover:bg-blue-200' }}
+               class="{{ request()->routeIs('admin.department.department') ? 'bg-blue-400 text-white font-semibold shadow-sm' : 'text-gray-700 hover:bg-blue-200' }}
                flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -65,7 +65,7 @@
 
             <!-- Programs -->
             <a href="{{ route('admin.programs.programs') }}"
-               class="{{ request()->routeIs('admin.programs') ? 'bg-blue-400 text-white font-semibold shadow-sm' : 'text-gray-700 hover:bg-blue-200' }}
+               class="{{ request()->routeIs('admin.programs.programs') ? 'bg-blue-400 text-white font-semibold shadow-sm' : 'text-gray-700 hover:bg-blue-200' }}
                flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -127,17 +127,6 @@
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
                 Terms
-            </a>
-
-            <!-- Registrar -->
-            <a href="{{ route('admin.registrars') }}"
-               class="{{ request()->routeIs('admin.registrars') ? 'bg-blue-400 text-white font-semibold shadow-sm' : 'text-gray-700 hover:bg-blue-200' }}
-               flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"/>
-                </svg>
-                Registrar
             </a>
 
             <!-- Payments -->

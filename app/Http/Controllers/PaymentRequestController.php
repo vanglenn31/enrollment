@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Announcement;
 use App\Models\Payment;
 use App\Models\PaymentRequest;
 use App\Models\StudentEnrollment;
@@ -14,13 +15,6 @@ class PaymentRequestController extends Controller
     /*  STUDENT: Submit a payment request                                  */
     /* ================================================================== */
 
-    /**
-     * POST /student/payments/request
-     *
-     * The blade now sends enrollment_id + the payment details.
-     * We compute the balance here, create a fresh Payment row
-     * (status = for_review), then attach a PaymentRequest to it.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -32,24 +26,21 @@ class PaymentRequestController extends Controller
             'note'             => ['nullable', 'string', 'max:500'],
         ]);
 
-        // ── 1. Load enrollment and verify it belongs to this student ──────────
-        // NOTE: student->user_id does NOT exist. The user_id lives on the 'users'
-        // table and is linked via profile->user_id. The correct ownership chain is:
-        //   enrollment → student → profile → user_id === Auth::id()
+        // ── 1. Load enrollment and verify ownership ───────────────────────────
         $enrollment = StudentEnrollment::with(['payments', 'enrolledCourse', 'student.profile'])
             ->findOrFail($validated['enrollment_id']);
 
         $user = Auth::user();
 
         if (
-            !$enrollment->student ||
-            !$enrollment->student->profile ||
+            ! $enrollment->student ||
+            ! $enrollment->student->profile ||
             $enrollment->student->profile->user_id !== $user->id
         ) {
             abort(403, 'Unauthorized: this enrollment does not belong to you.');
         }
 
-        // ── 2. Compute balance (same formula as PaymentController) ─────────
+        // ── 2. Compute balance ────────────────────────────────────────────────
         $totalTuition = $enrollment->enrolledCourse()->sum('course_price');
 
         $downpayment = $enrollment->payments()
@@ -64,12 +55,10 @@ class PaymentRequestController extends Controller
 
         $balance = max(0, $totalTuition - ($amountPaid + $downpayment));
 
-        // ── 3. Guard: nothing left to pay ──────────────────────────────────
         if ($balance <= 0) {
             return back()->with('error', 'Your tuition is already fully paid.');
         }
 
-        // ── 4. Guard: amount cannot exceed remaining balance ───────────────
         if ($validated['amount_paid'] > $balance) {
             return back()->with('error',
                 'The amount ₱' . number_format($validated['amount_paid'], 2) .
@@ -77,7 +66,7 @@ class PaymentRequestController extends Controller
             );
         }
 
-        // ── 5. Guard: no duplicate pending request for this enrollment ─────
+        // ── 3. Guard: no duplicate pending ────────────────────────────────────
         $alreadyPending = PaymentRequest::whereHas('payment', function ($q) use ($enrollment) {
                 $q->where('student_enrollment_id', $enrollment->id);
             })
@@ -88,25 +77,25 @@ class PaymentRequestController extends Controller
             return back()->with('error', 'You already have a pending request under review. Please wait for admin to resolve it before submitting another.');
         }
 
-        // ── 6. Store proof file if uploaded ───────────────────────────────
+        // ── 4. Store proof file ───────────────────────────────────────────────
         $path = null;
         if ($request->hasFile('proof_of_payment')) {
             $path = $request->file('proof_of_payment')
                             ->store('payment_proofs', 'public');
         }
 
-        // ── 7. Create the Payment row (for_review, no confirmed date yet) ──
+        // ── 5. Create Payment row ─────────────────────────────────────────────
         $payment = Payment::create([
             'student_enrollment_id' => $enrollment->id,
             'amount'                => $validated['amount_paid'],
             'payment_type'          => 'tuition',
             'payment_method'        => $validated['payment_method'],
             'reference_number'      => $validated['reference_number'] ?? null,
-            'payment_status' => 'pending',
+            'payment_status'        => 'pending',
             'payment_date'          => now(),
         ]);
 
-        // ── 8. Create the PaymentRequest linked to that Payment row ────────
+        // ── 6. Create PaymentRequest ──────────────────────────────────────────
         PaymentRequest::create([
             'payment_id'       => $payment->id,
             'student_id'       => Auth::id(),
@@ -118,6 +107,9 @@ class PaymentRequestController extends Controller
             'status'           => 'pending',
         ]);
 
+        // ── 7. Notify student: request received ───────────────────────────────
+        
+
         return back()->with('success', 'Payment request submitted. The admin will review it shortly.');
     }
 
@@ -125,12 +117,9 @@ class PaymentRequestController extends Controller
     /*  ADMIN: List all payment requests                                   */
     /* ================================================================== */
 
-    /**
-     * GET /admin/payment-requests
-     */
     public function index(Request $request)
     {
-        $filter = $request->get('filter', 'pending'); // pending | approved | rejected | all
+        $filter = $request->get('filter', 'pending');
 
         $requests = PaymentRequest::with([
                 'payment.studentEnrollment.student.profile',
@@ -149,7 +138,6 @@ class PaymentRequestController extends Controller
         return view('admin.payments.payment-requests', compact('requests', 'filter', 'pendingCount'));
     }
 
- 
     public function show(PaymentRequest $paymentRequest)
     {
         $paymentRequest->load([
@@ -185,6 +173,10 @@ class PaymentRequestController extends Controller
         ));
     }
 
+    /* ================================================================== */
+    /*  ADMIN: Approve a request                                           */
+    /* ================================================================== */
+
     public function approve(Request $request, PaymentRequest $paymentRequest)
     {
         $request->validate([
@@ -195,7 +187,6 @@ class PaymentRequestController extends Controller
             return back()->with('error', 'This request has already been reviewed.');
         }
 
-        // Mark the request approved
         $paymentRequest->update([
             'status'      => 'approved',
             'reviewed_by' => Auth::id(),
@@ -203,7 +194,6 @@ class PaymentRequestController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        // Confirm the payment: set date and determine paid vs partial
         $payment    = $paymentRequest->payment->load('studentEnrollment.payments');
         $enrollment = $payment->studentEnrollment;
 
@@ -214,7 +204,6 @@ class PaymentRequestController extends Controller
             ->whereNotIn('payment_status', ['cancelled'])
             ->sum('amount');
 
-        // Sum tuition payments already confirmed (exclude the current for_review one)
         $alreadyPaid = $enrollment->payments
             ->where('payment_type', 'tuition')
             ->whereIn('payment_status', ['paid', 'partial'])
@@ -223,13 +212,27 @@ class PaymentRequestController extends Controller
         $newTotal   = $alreadyPaid + $downpayment + $paymentRequest->amount_paid;
         $newBalance = max(0, $totalTuition - $newTotal);
 
+        $newStatus = $newBalance <= 0 ? 'paid' : 'partial';
+
         $payment->update([
             'amount'           => $paymentRequest->amount_paid,
             'payment_method'   => $paymentRequest->payment_method,
             'reference_number' => $paymentRequest->reference_number,
             'payment_date'     => now(),
-            'payment_status'   => $newBalance <= 0 ? 'paid' : 'partial',
+            'payment_status'   => $newStatus,
         ]);
+
+        // ── Notify student: payment approved ─────────────────────────────────
+        // Resolve the student's user_id through the ownership chain
+        $studentUserId = $enrollment->student?->profile?->user_id;
+
+        if ($studentUserId) {
+            $balanceMsg = $newBalance > 0
+                ? ' Your remaining balance is ₱' . number_format($newBalance, 2) . '.'
+                : ' Your tuition is now fully paid. 🎉';
+
+            
+        }
 
         return redirect()
             ->route('admin.payment-requests.index')
@@ -240,9 +243,6 @@ class PaymentRequestController extends Controller
     /*  ADMIN: Reject a request                                            */
     /* ================================================================== */
 
-    /**
-     * POST /admin/payment-requests/{paymentRequest}/reject
-     */
     public function reject(Request $request, PaymentRequest $paymentRequest)
     {
         $request->validate([
@@ -260,8 +260,19 @@ class PaymentRequestController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        // Cancel the for_review Payment row so it doesn't pollute the balance
         $paymentRequest->payment->update(['payment_status' => 'cancelled']);
+
+        // ── Notify student: payment rejected ─────────────────────────────────
+        $enrollment    = $paymentRequest->payment->studentEnrollment;
+        $studentUserId = $enrollment->student?->profile?->user_id;
+
+        if ($studentUserId) {
+            $reason = $request->admin_note
+                ? ' Reason: ' . $request->admin_note
+                : '';
+
+           
+        }
 
         return redirect()
             ->route('admin.payment-requests.index')

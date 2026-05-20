@@ -29,7 +29,7 @@
                         </div>
 
                         <a href="{{ route('admin.department.create') }}"
-                           class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700">
+                           class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-blue-700 transition">
                             + Add Department
                         </a>
                     </div>
@@ -44,26 +44,49 @@
                     <!-- CARD -->
                     <div class="bg-white rounded-2xl shadow-sm border p-4 sm:p-6 space-y-6">
 
-                        <!-- TOP BAR -->
-                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <!-- SEARCH + FILTER ROW -->
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 
-                            <div>
-                                <h2 class="text-lg font-semibold text-gray-800">Department List</h2>
-                                <p class="text-sm text-gray-500">All registered departments</p>
-                            </div>
-
-                            <!-- SEARCH -->
+                            {{-- Search --}}
                             <form method="GET" action="{{ route('admin.department.department') }}" class="w-full sm:w-80">
-                                <div class="flex bg-gray-100 rounded-xl px-3 py-2">
+                                @if(request('status'))
+                                    <input type="hidden" name="status" value="{{ request('status') }}">
+                                @endif
+                                <div class="flex items-center bg-gray-100 rounded-xl px-3 py-2">
                                     <input name="search" value="{{ $search ?? '' }}"
                                            placeholder="Search departments..."
                                            class="bg-transparent w-full outline-none text-sm px-2">
-
-                                    <button class="bg-slate-900 text-white px-4 py-1.5 rounded-lg text-sm">
+                                    <button class="bg-slate-900 text-white text-sm px-4 py-1.5 rounded-lg">
                                         Search
                                     </button>
                                 </div>
                             </form>
+
+                            {{-- Status filter tabs --}}
+                            <div class="flex items-center gap-1 bg-gray-100 rounded-xl p-1 self-start sm:self-auto">
+                                @php
+                                    $tabs = [
+                                        ''         => ['label' => 'All',      'count' => $totalCount,    'active' => 'bg-white text-gray-900 shadow-sm', 'idle' => 'text-gray-500 hover:text-gray-700'],
+                                        'active'   => ['label' => 'Active',   'count' => $activeCount,   'active' => 'bg-white text-green-700 shadow-sm', 'idle' => 'text-gray-500 hover:text-gray-700'],
+                                        'inactive' => ['label' => 'Inactive', 'count' => $inactiveCount, 'active' => 'bg-white text-red-600 shadow-sm',   'idle' => 'text-gray-500 hover:text-gray-700'],
+                                    ];
+                                    $currentStatus = $status ?? '';
+                                @endphp
+
+                                @foreach($tabs as $val => $tab)
+                                    <a href="{{ route('admin.department.department', array_filter(['search' => $search, 'status' => $val])) }}"
+                                       class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-150
+                                              {{ $currentStatus === $val ? $tab['active'] : $tab['idle'] }}">
+                                        {{ $tab['label'] }}
+                                        <span class="rounded-full px-1.5 py-0.5 text-[11px] font-semibold leading-none
+                                            {{ $currentStatus === $val
+                                                ? ($val === 'active' ? 'bg-green-100 text-green-700' : ($val === 'inactive' ? 'bg-red-100 text-red-600' : 'bg-gray-200 text-gray-600'))
+                                                : 'bg-gray-200 text-gray-500' }}">
+                                            {{ $tab['count'] }}
+                                        </span>
+                                    </a>
+                                @endforeach
+                            </div>
 
                         </div>
 
@@ -96,7 +119,6 @@
                                                 {{ $department->created_at->format('M d, Y') }}
                                             </td>
 
-                                            <!-- ✅ STATUS -->
                                             <td class="py-3 px-4">
                                                 <span class="{{ $department->status === 'active'
                                                     ? 'bg-green-100 text-green-700'
@@ -106,7 +128,6 @@
                                                 </span>
                                             </td>
 
-                                            <!-- ✅ ACTIONS -->
                                             <td class="py-3 px-4 flex gap-2">
 
                                                 <a href="{{ route('admin.department.edit', $department) }}"

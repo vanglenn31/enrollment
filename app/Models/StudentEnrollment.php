@@ -38,7 +38,7 @@ class StudentEnrollment extends Model
     {
         return $this->hasMany(Payment::class, 'student_enrollment_id');
     }
-    // In StudentEnrollment.php, add this relationship:
+
     public function enrolledCourse()
     {
         return $this->hasOne(\App\Models\EnrolledCourse::class, 'student_enrollment_id');

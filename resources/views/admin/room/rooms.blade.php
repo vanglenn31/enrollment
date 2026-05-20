@@ -17,170 +17,193 @@
             <!-- CONTENT -->
             <main class="flex-1 p-4 sm:p-6 lg:p-8">
 
-                <!-- PAGE HEADER -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-                    <div>
-                        <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Rooms</h1>
-                        <p class="text-sm text-gray-500 mt-1">Manage classrooms and buildings</p>
-                    </div>
+                <div class="max-w-7xl mx-auto space-y-6">
 
-                    <a href="{{ route('admin.rooms.create') }}"
-                       class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition w-full sm:w-auto">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        Add Room
-                    </a>
-                </div>
-
-                <!-- SUCCESS MESSAGE -->
-                @if(session('success'))
-                    <div class="rounded-xl bg-green-50 border border-green-200 text-green-700 p-4 mb-4 text-sm">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                <!-- SEARCH -->
-                <form method="GET" action="{{ route('admin.rooms.index') }}" class="mb-4">
-                    <div class="relative w-full sm:max-w-sm">
-                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
-                        </svg>
-                        <input type="text" name="search" value="{{ $search ?? '' }}"
-                               placeholder="Search rooms or buildings..."
-                               class="pl-9 pr-4 py-2 w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm">
-                    </div>
-                </form>
-
-                <!-- ========== MOBILE CARD LIST (hidden on md+) ========== -->
-                <div class="flex flex-col gap-3 md:hidden">
-                    @forelse($rooms as $room)
-                        <div class="bg-white rounded-2xl shadow-sm p-4">
-
-                            <!-- Card Header -->
-                            <div class="flex items-start justify-between gap-2 mb-3">
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-900">{{ $room->room_name }}</p>
-                                    <p class="text-xs text-gray-500 mt-0.5">{{ $room->room_building }}</p>
-                                </div>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 shrink-0">
-                                    {{ $room->courses_count ?? $room->courses()->count() }} course(s)
-                                </span>
-                            </div>
-
-                            <!-- Card Actions -->
-                            <div class="flex items-center gap-4 pt-3 border-t border-gray-100">
-                                <a href="{{ route('admin.rooms.edit', $room) }}"
-                                   class="text-sm text-blue-600 hover:text-blue-800 font-medium transition">
-                                    Edit
-                                </a>
-
-                                <form action="{{ route('admin.rooms.destroy', $room) }}" method="POST"
-                                      onsubmit="return confirm('Delete this room? Courses assigned to it will be unlinked.')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                            class="text-sm text-red-500 hover:text-red-700 font-medium transition">
-                                        Delete
-                                    </button>
-                                </form>
-                            </div>
-
+                    <!-- PAGE HEADER -->
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Rooms</h1>
+                            <p class="text-sm text-gray-500 mt-1">Manage classrooms and buildings</p>
                         </div>
-                    @empty
-                        <div class="bg-white rounded-2xl shadow-sm p-8 text-center text-sm text-gray-400">
-                            No rooms found.
-                            <a href="{{ route('admin.rooms.create') }}" class="text-blue-600 hover:underline ml-1">Add one now.</a>
-                        </div>
-                    @endforelse
 
-                    <!-- Mobile Pagination -->
-                    @if($rooms->hasPages())
-                        <div class="mt-2">
-                            {{ $rooms->links() }}
+                        <a href="{{ route('admin.rooms.create') }}"
+                           class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow shrink-0">
+                            + Add Room
+                        </a>
+                    </div>
+
+                    <!-- SUCCESS -->
+                    @if(session('success'))
+                        <div class="rounded-2xl bg-emerald-100 border border-emerald-200 text-emerald-700 p-4">
+                            {{ session('success') }}
                         </div>
                     @endif
-                </div>
 
-                <!-- ========== DESKTOP TABLE (hidden below md) ========== -->
-                <div class="hidden md:block bg-white rounded-2xl shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-100">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Room Name
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Building
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Courses Assigned
-                                    </th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
+                    <!-- CARD -->
+                    <div class="bg-white rounded-2xl shadow-sm border p-4 sm:p-6 space-y-6">
+
+                        <!-- TOP BAR -->
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-800">Room List</h2>
+                                <p class="text-sm text-gray-500">All registered classrooms and buildings</p>
+                            </div>
+
+                            <!-- SEARCH -->
+                            <form method="GET" action="{{ route('admin.rooms.index') }}" class="w-full sm:w-80">
+                                <div class="flex items-center bg-gray-100 rounded-xl px-3 py-2">
+                                    <input type="text" name="search" value="{{ $search ?? '' }}"
+                                           placeholder="Search rooms or buildings..."
+                                           class="bg-transparent w-full outline-none text-sm px-2 text-gray-700 placeholder-gray-400">
+                                    <button type="submit"
+                                            class="bg-slate-900 text-white px-4 py-1.5 rounded-lg text-sm shrink-0">
+                                        Search
+                                    </button>
+                                </div>
+                            </form>
+
+                        </div>
+
+                        <!-- EMPTY STATE -->
+                        @if(($totalCount ?? 0) === 0 && !($search ?? ''))
+
+                            <div class="flex flex-col items-center justify-center py-16 text-center">
+                                <div class="bg-gray-100 rounded-full p-5 mb-4">
+                                    <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-700">No rooms yet</h3>
+                                <p class="text-sm text-gray-400 mt-1 max-w-xs">
+                                    Get started by adding your first classroom or building.
+                                </p>
+                                <a href="{{ route('admin.rooms.create') }}"
+                                   class="mt-5 inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-700 transition">
+                                    + Add Room
+                                </a>
+                            </div>
+
+                        @else
+
+                            <!-- MOBILE CARDS -->
+                            <div class="md:hidden space-y-3">
                                 @forelse($rooms as $room)
-                                    <tr class="hover:bg-gray-50 transition">
+                                    <div class="border rounded-xl p-4 hover:bg-gray-50 transition">
 
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="text-sm font-medium text-gray-900">
-                                                {{ $room->room_name }}
-                                            </span>
-                                        </td>
-
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="text-sm text-gray-600">
-                                                {{ $room->room_building }}
-                                            </span>
-                                        </td>
-
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div>
+                                                <p class="font-semibold text-gray-900">{{ $room->room_name }}</p>
+                                                <p class="text-sm text-gray-500 mt-0.5">{{ $room->room_building }}</p>
+                                            </div>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 shrink-0">
                                                 {{ $room->courses_count ?? $room->courses()->count() }} course(s)
                                             </span>
-                                        </td>
+                                        </div>
 
-                                        <td class="px-6 py-4 whitespace-nowrap text-right">
-                                            <div class="flex items-center justify-end gap-2">
-                                                <a href="{{ route('admin.rooms.edit', $room) }}"
-                                                   class="text-sm text-blue-600 hover:text-blue-800 font-medium transition">
-                                                    Edit
-                                                </a>
+                                        <div class="flex items-center gap-4 pt-3 mt-3 border-t border-gray-100">
+                                            <a href="{{ route('admin.rooms.edit', $room) }}"
+                                               class="text-sm text-blue-600 hover:underline font-medium">
+                                                Edit
+                                            </a>
 
-                                                <form action="{{ route('admin.rooms.destroy', $room) }}" method="POST"
-                                                      onsubmit="return confirm('Delete this room? Courses assigned to it will be unlinked.')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                            class="text-sm text-red-500 hover:text-red-700 font-medium transition">
-                                                        Delete
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                            <form action="{{ route('admin.rooms.destroy', $room) }}" method="POST"
+                                                  onsubmit="return confirm('Delete this room? Courses assigned to it will be unlinked.')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="text-sm text-red-500 hover:text-red-700 font-medium">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                    </div>
                                 @empty
-                                    <tr>
-                                        <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-400">
+                                    <div class="text-center py-10 text-gray-400 text-sm">
+                                        @if($search ?? '')
+                                            No rooms matched your search.
+                                        @else
                                             No rooms found.
-                                            <a href="{{ route('admin.rooms.create') }}" class="text-blue-600 hover:underline ml-1">Add one now.</a>
-                                        </td>
-                                    </tr>
+                                        @endif
+                                    </div>
                                 @endforelse
-                            </tbody>
-                        </table>
+                            </div>
+
+                            <!-- DESKTOP TABLE -->
+                            <div class="hidden md:block overflow-x-auto border rounded-xl">
+                                <table class="min-w-full text-sm">
+                                    <thead class="bg-gray-50 text-gray-600">
+                                        <tr>
+                                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Room Name</th>
+                                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Building</th>
+                                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Courses Assigned</th>
+                                            <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        @forelse($rooms as $room)
+                                            <tr class="hover:bg-gray-50 transition">
+
+                                                <td class="px-5 py-4 font-medium text-gray-900">
+                                                    {{ $room->room_name }}
+                                                </td>
+
+                                                <td class="px-5 py-4 text-gray-600">
+                                                    {{ $room->room_building }}
+                                                </td>
+
+                                                <td class="px-5 py-4">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                                        {{ $room->courses_count ?? $room->courses()->count() }} course(s)
+                                                    </span>
+                                                </td>
+
+                                                <td class="px-5 py-4 text-right">
+                                                    <div class="flex items-center justify-end gap-3">
+                                                        <a href="{{ route('admin.rooms.edit', $room) }}"
+                                                           class="text-blue-600 hover:underline text-sm font-medium">
+                                                            Edit
+                                                        </a>
+
+                                                        <form action="{{ route('admin.rooms.destroy', $room) }}" method="POST"
+                                                              onsubmit="return confirm('Delete this room? Courses assigned to it will be unlinked.')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit"
+                                                                    class="text-red-500 hover:text-red-700 text-sm font-medium">
+                                                                Delete
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="px-5 py-12 text-center text-gray-400">
+                                                    @if($search ?? '')
+                                                        No rooms matched your search.
+                                                    @else
+                                                        No rooms found.
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- PAGINATION -->
+                            <div>
+                                {{ $rooms->links() }}
+                            </div>
+
+                        @endif
+
                     </div>
 
-                    <!-- Desktop Pagination -->
-                    @if($rooms->hasPages())
-                        <div class="px-6 py-4 border-t border-gray-100">
-                            {{ $rooms->links() }}
-                        </div>
-                    @endif
                 </div>
 
             </main>

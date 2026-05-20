@@ -71,9 +71,6 @@
                                     <p class="text-xs text-gray-400">
                                         {{ $enrollment->student->student_number }}
                                         &nbsp;·&nbsp;
-                                        {{ $enrollment->course->name ?? 'N/A' }}
-                                        &nbsp;·&nbsp;
-                                        {{ $enrollment->term->name ?? 'N/A' }}
                                     </p>
                                 </div>
 
@@ -88,7 +85,7 @@
                                 @endif
                             </div>
 
-                            <div class="grid grid-cols-3 gap-3 text-center">
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
 
                                 <div class="bg-gray-50 rounded-2xl p-4">
                                     <p class="text-xs text-gray-500 mb-1">Total Tuition</p>
@@ -97,8 +94,15 @@
                                     </p>
                                 </div>
 
+                                <div class="bg-indigo-50 rounded-2xl p-4">
+                                    <p class="text-xs text-gray-500 mb-1">Downpayment</p>
+                                    <p class="text-lg font-bold text-indigo-600">
+                                        ₱{{ number_format($downpayment, 2) }}
+                                    </p>
+                                </div>
+
                                 <div class="bg-green-50 rounded-2xl p-4">
-                                    <p class="text-xs text-gray-500 mb-1">Amount Paid</p>
+                                    <p class="text-xs text-gray-500 mb-1">Tuition Paid</p>
                                     <p class="text-lg font-bold text-green-600">
                                         ₱{{ number_format($amountPaid, 2) }}
                                     </p>
@@ -229,7 +233,6 @@
                                             <option value="pending"   {{ old('payment_status') === 'pending'   ? 'selected' : '' }}>Pending</option>
                                             <option value="partial"   {{ old('payment_status') === 'partial'   ? 'selected' : '' }}>Partial</option>
                                             <option value="paid"      {{ old('payment_status') === 'paid'      ? 'selected' : '' }}>Paid</option>
-                                            <option value="cancelled" {{ old('payment_status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                         </select>
                                     </div>
 

@@ -15,6 +15,7 @@ class CourseController extends Controller
     public function courses(Request $request)
     {
         $search = $request->input('search');
+        $status = $request->input('status'); // 'active', 'inactive', or null (all)
 
         $courses = Course::with('program.department', 'professor.profile')
             ->withCount(['studentEnrollments', 'enrolledCourses'])
@@ -31,11 +32,19 @@ class CourseController extends Controller
                       });
                 });
             })
+            ->when(in_array($status, ['active', 'inactive']), function ($query) use ($status) {
+                $query->where('status', $status);
+            })
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.course.course', compact('courses', 'search'));
+        // Counts for tab badges
+        $totalCount    = Course::count();
+        $activeCount   = Course::where('status', 'active')->count();
+        $inactiveCount = Course::where('status', 'inactive')->count();
+
+        return view('admin.course.course', compact('courses', 'search', 'status', 'totalCount', 'activeCount', 'inactiveCount'));
     }
 
     /**
@@ -44,16 +53,24 @@ class CourseController extends Controller
     public function showCourse(Course $course)
 {
     $course->load([
-        'enrolledCourses.studentEnrollment.student.profile',
-        'enrolledCourses.professor.profile',
-        'enrolledCourses.room',
+        'enrolledCourses' => function ($q) {
+            $q->whereNotNull('student_enrollment_id')
+              ->with(['professor.profile', 'room']);
+        },
+
+        'studentEnrollments.student.profile',
         'program',
     ]);
 
-    $enrolledCount   = $course->enrolledCourses->count();
-    $availableSlots  = max(0, ($course->slots ?? 0) - $enrolledCount);
+    $enrolledCount = $course->enrolledCourses->count();
 
-    return view('admin.course.course-detail', compact('course', 'enrolledCount', 'availableSlots'));
+    $availableSlots = max(0, ($course->slots ?? 0) - $enrolledCount);
+
+    return view('admin.course.course-detail', compact(
+        'course',
+        'enrolledCount',
+        'availableSlots'
+    ));
 }
 
 public function updateGrade(EnrolledCourse $enrolledCourse, Request $request)
